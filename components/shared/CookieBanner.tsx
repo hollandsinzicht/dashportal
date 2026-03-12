@@ -1,35 +1,52 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import { Cookie, X } from "lucide-react";
 import Link from "next/link";
 
-const COOKIE_CONSENT_KEY = "bi_cookie_consent";
-const CONSENT_DURATION_DAYS = 365;
+const COOKIE_CONSENT_KEY = "dp_cookie_consent";
 
 type ConsentLevel = "essential" | "analytics" | "all";
+
+function getConsent(): string | null {
+  if (typeof window !== "undefined") {
+    const ls = localStorage.getItem(COOKIE_CONSENT_KEY);
+    if (ls) return ls;
+  }
+  if (typeof document !== "undefined") {
+    const match = document.cookie.match(
+      new RegExp(`(?:^|; )${COOKIE_CONSENT_KEY}=([^;]*)`)
+    );
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  return null;
+}
+
+function setConsent(level: ConsentLevel) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(COOKIE_CONSENT_KEY, level);
+  }
+  if (typeof document !== "undefined") {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 365);
+    document.cookie = `${COOKIE_CONSENT_KEY}=${level}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+  }
+}
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    // Check of er al consent is gegeven
-    const consent = Cookies.get(COOKIE_CONSENT_KEY);
+    const consent = getConsent();
     if (!consent) {
-      // Klein delay zodat de pagina eerst laadt
       const timer = setTimeout(() => setVisible(true), 1000);
       return () => clearTimeout(timer);
     }
   }, []);
 
   function saveConsent(level: ConsentLevel) {
-    Cookies.set(COOKIE_CONSENT_KEY, level, {
-      expires: CONSENT_DURATION_DAYS,
-      sameSite: "lax",
-      path: "/",
-    });
+    setConsent(level);
     setVisible(false);
   }
 
@@ -39,7 +56,6 @@ export function CookieBanner() {
     <div className="fixed bottom-0 inset-x-0 z-[100] p-4 sm:p-6">
       <div className="max-w-2xl mx-auto bg-surface border border-border rounded-2xl shadow-xl shadow-black/10">
         <div className="p-5 sm:p-6">
-          {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -58,26 +74,19 @@ export function CookieBanner() {
             </button>
           </div>
 
-          {/* Tekst */}
           <p className="text-sm text-text-secondary leading-relaxed mb-4">
             Wij gebruiken cookies om de website te laten werken en om je ervaring
-            te verbeteren. Essentieel cookies zijn altijd actief.{" "}
-            <Link
-              href="/privacy"
-              className="text-primary hover:underline"
-            >
+            te verbeteren. Essentiële cookies zijn altijd actief.{" "}
+            <Link href="/privacy" className="text-primary hover:underline">
               Lees ons privacybeleid
             </Link>
           </p>
 
-          {/* Details (uitklapbaar) */}
           {showDetails && (
             <div className="mb-4 space-y-2 text-sm">
               <div className="flex items-center justify-between p-3 bg-surface-secondary/50 rounded-lg">
                 <div>
-                  <p className="font-medium text-text-primary">
-                    Essentieel
-                  </p>
+                  <p className="font-medium text-text-primary">Essentieel</p>
                   <p className="text-xs text-text-secondary">
                     Nodig voor login, sessie en basisfunctionaliteit
                   </p>
@@ -88,21 +97,16 @@ export function CookieBanner() {
               </div>
               <div className="flex items-center justify-between p-3 bg-surface-secondary/50 rounded-lg">
                 <div>
-                  <p className="font-medium text-text-primary">
-                    Analytics
-                  </p>
+                  <p className="font-medium text-text-primary">Analytics</p>
                   <p className="text-xs text-text-secondary">
                     Anoniem gebruik meten om het product te verbeteren
                   </p>
                 </div>
-                <span className="text-xs text-text-secondary">
-                  Optioneel
-                </span>
+                <span className="text-xs text-text-secondary">Optioneel</span>
               </div>
             </div>
           )}
 
-          {/* Knoppen */}
           <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => saveConsent("all")}

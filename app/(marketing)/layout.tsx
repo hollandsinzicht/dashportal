@@ -43,6 +43,12 @@ export default function MarketingLayout({
               >
                 Demo
               </Link>
+              <Link
+                href="/contact"
+                className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                Contact
+              </Link>
             </div>
 
             <div className="flex items-center gap-3">
@@ -72,7 +78,7 @@ export default function MarketingLayout({
                 DashPortal
               </span>
               <span className="text-xs text-text-secondary">
-                by DashPortal
+                by Power BI Studio
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4">
@@ -102,6 +108,13 @@ export default function MarketingLayout({
                 className="text-sm text-text-secondary hover:text-text-primary transition-colors"
               >
                 Disclaimer
+              </Link>
+              <span className="text-text-secondary/30">|</span>
+              <Link
+                href="/contact"
+                className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                Contact
               </Link>
               <span className="text-text-secondary/30">|</span>
               <p className="text-sm text-text-secondary">
