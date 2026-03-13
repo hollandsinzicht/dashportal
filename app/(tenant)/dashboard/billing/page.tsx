@@ -15,6 +15,7 @@ import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton"
 import { ActivateSubscriptionButton } from "@/components/dashboard/ActivateSubscriptionButton";
 import { CancelSubscriptionDialog } from "@/components/dashboard/CancelSubscriptionDialog";
 import { DataExportButton } from "@/components/dashboard/DataExportButton";
+import { PlanSwitcher } from "@/components/dashboard/PlanSwitcher";
 
 export default async function BillingPage() {
   // ─── Auth + tenant context ───
@@ -537,6 +538,17 @@ export default async function BillingPage() {
           />
         </div>
       )}
+
+      {/* ═══ Plan wijzigen ═══ */}
+      {(isActive || isTrialing) &&
+        !tenant.cancel_at_period_end &&
+        tenant.subscription_plan !== "enterprise" && (
+          <PlanSwitcher
+            tenantId={tenant.id}
+            currentPlan={tenant.subscription_plan || "starter"}
+            currentPeriodEnd={tenant.current_period_end || ""}
+          />
+        )}
 
       {/* ═══ Data export ═══ */}
       <div className="bg-surface border border-border rounded-xl p-6">

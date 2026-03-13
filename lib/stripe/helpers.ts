@@ -121,3 +121,52 @@ export async function reactivateSubscription(
     cancel_at_period_end: false,
   });
 }
+
+/**
+ * Wijzig het plan van een bestaande subscription.
+ *
+ * Gebruikt `proration_behavior: "none"` — de nieuwe prijs gaat pas in
+ * bij de volgende factuur (geen tussentijdse bijbetaling).
+ *
+ * De webhook `customer.subscription.updated` vangt de wijziging op
+ * en synct het nieuwe plan automatisch naar de database.
+ */
+export async function changeSubscriptionPlan(
+  stripeSubscriptionId: string,
+  newPlan: string
+): Promise<{ effectiveDate: string }> {
+  // Valideer dat het geen enterprise plan is (custom pricing)
+  if (newPlan === "enterprise") {
+    throw new Error("Enterprise plannen kunnen niet via self-service worden gewijzigd.");
+  }
+
+  const newPriceId = getStripePriceId(newPlan);
+  if (!newPriceId) {
+    throw new Error(
+      `Geen Stripe Price ID geconfigureerd voor plan: ${newPlan}. Stel STRIPE_PRICE_${newPlan.toUpperCase()} in.`
+    );
+  }
+
+  // Huidige subscription ophalen
+  const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+  if (!subscription || !subscription.items.data[0]) {
+    throw new Error("Subscription niet gevonden of heeft geen items.");
+  }
+
+  const currentItemId = subscription.items.data[0].id;
+
+  // Subscription item wijzigen zonder prorating
+  const updated = await stripe.subscriptions.update(stripeSubscriptionId, {
+    items: [{ id: currentItemId, price: newPriceId }],
+    proration_behavior: "none",
+  });
+
+  // current_period_end ophalen — wanneer de nieuwe prijs ingaat
+  const periodEnd = updated.items.data[0]?.current_period_end;
+  const effectiveDate = periodEnd
+    ? new Date(periodEnd * 1000).toISOString()
+    : new Date().toISOString();
+
+  return { effectiveDate };
+}
