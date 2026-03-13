@@ -30,8 +30,8 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
 
-  // ─── Localhost: geen subdomain routing ───
-  if (hostname.includes("localhost")) {
+  // ─── Localhost / dev: geen subdomain routing ───
+  if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
     return updateSession(request);
   }
 
