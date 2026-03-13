@@ -1,15 +1,16 @@
 -- ============================================
--- BI Portal — Database Schema
--- Run this in Supabase SQL Editor
+-- BI Portal — Database Schema (Idempotent)
+-- Veilig om meerdere keren te draaien in Supabase SQL Editor
 -- ============================================
 
 -- Enable UUID generation
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================
--- TENANTS
+-- TABELLEN (IF NOT EXISTS)
 -- ============================================
-CREATE TABLE tenants (
+
+CREATE TABLE IF NOT EXISTS tenants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
@@ -42,10 +43,7 @@ CREATE TABLE tenants (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================
--- TENANT USERS
--- ============================================
-CREATE TABLE tenant_users (
+CREATE TABLE IF NOT EXISTS tenant_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
@@ -61,10 +59,7 @@ CREATE TABLE tenant_users (
   UNIQUE(tenant_id, email)
 );
 
--- ============================================
--- REPORTS
--- ============================================
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
 
@@ -92,10 +87,7 @@ CREATE TABLE reports (
   UNIQUE(tenant_id, pbi_report_id)
 );
 
--- ============================================
--- REPORT ACCESS
--- ============================================
-CREATE TABLE report_access (
+CREATE TABLE IF NOT EXISTS report_access (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   report_id UUID REFERENCES reports(id) ON DELETE CASCADE,
   user_id UUID REFERENCES tenant_users(id) ON DELETE CASCADE,
@@ -104,10 +96,7 @@ CREATE TABLE report_access (
   UNIQUE(report_id, user_id)
 );
 
--- ============================================
--- RLS ROLES
--- ============================================
-CREATE TABLE rls_roles (
+CREATE TABLE IF NOT EXISTS rls_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   user_id UUID REFERENCES tenant_users(id) ON DELETE CASCADE,
@@ -118,10 +107,7 @@ CREATE TABLE rls_roles (
   UNIQUE(user_id, report_id)
 );
 
--- ============================================
--- REPORT VIEWS — Bijhouden welke rapporten bekeken worden
--- ============================================
-CREATE TABLE report_views (
+CREATE TABLE IF NOT EXISTS report_views (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   report_id UUID REFERENCES reports(id) ON DELETE CASCADE,
@@ -129,10 +115,7 @@ CREATE TABLE report_views (
   viewed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================
--- ACTIVITY LOG — Audit trail voor admin acties
--- ============================================
-CREATE TABLE activity_log (
+CREATE TABLE IF NOT EXISTS activity_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   actor_id UUID REFERENCES tenant_users(id) ON DELETE SET NULL,
@@ -144,22 +127,22 @@ CREATE TABLE activity_log (
 );
 
 -- ============================================
--- INDEXES
+-- INDEXES (IF NOT EXISTS)
 -- ============================================
-CREATE INDEX idx_tenant_users_tenant ON tenant_users(tenant_id);
-CREATE INDEX idx_tenant_users_email ON tenant_users(email);
-CREATE INDEX idx_reports_tenant ON reports(tenant_id);
-CREATE INDEX idx_report_access_report ON report_access(report_id);
-CREATE INDEX idx_report_access_user ON report_access(user_id);
-CREATE INDEX idx_rls_roles_user_report ON rls_roles(user_id, report_id);
-CREATE INDEX idx_tenants_slug ON tenants(slug);
-CREATE INDEX idx_tenants_custom_domain ON tenants(custom_domain);
-CREATE INDEX idx_report_views_tenant ON report_views(tenant_id);
-CREATE INDEX idx_report_views_report ON report_views(report_id);
-CREATE INDEX idx_report_views_viewed_at ON report_views(viewed_at);
-CREATE INDEX idx_activity_log_tenant ON activity_log(tenant_id);
-CREATE INDEX idx_activity_log_created_at ON activity_log(created_at);
-CREATE INDEX idx_activity_log_action ON activity_log(action);
+CREATE INDEX IF NOT EXISTS idx_tenant_users_tenant ON tenant_users(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_tenant_users_email ON tenant_users(email);
+CREATE INDEX IF NOT EXISTS idx_reports_tenant ON reports(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_report_access_report ON report_access(report_id);
+CREATE INDEX IF NOT EXISTS idx_report_access_user ON report_access(user_id);
+CREATE INDEX IF NOT EXISTS idx_rls_roles_user_report ON rls_roles(user_id, report_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_slug ON tenants(slug);
+CREATE INDEX IF NOT EXISTS idx_tenants_custom_domain ON tenants(custom_domain);
+CREATE INDEX IF NOT EXISTS idx_report_views_tenant ON report_views(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_report_views_report ON report_views(report_id);
+CREATE INDEX IF NOT EXISTS idx_report_views_viewed_at ON report_views(viewed_at);
+CREATE INDEX IF NOT EXISTS idx_activity_log_tenant ON activity_log(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_activity_log_created_at ON activity_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_activity_log_action ON activity_log(action);
 
 -- ============================================
 -- ROW LEVEL SECURITY
@@ -200,73 +183,88 @@ AS $$
 $$;
 
 -- ============================================
--- POLICIES
+-- POLICIES (DROP IF EXISTS + CREATE)
 -- ============================================
 
 -- Service role: volledige toegang (voor API routes)
+DROP POLICY IF EXISTS "Service role full access on tenants" ON tenants;
 CREATE POLICY "Service role full access on tenants"
   ON tenants FOR ALL
   USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access on tenant_users" ON tenant_users;
 CREATE POLICY "Service role full access on tenant_users"
   ON tenant_users FOR ALL
   USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access on reports" ON reports;
 CREATE POLICY "Service role full access on reports"
   ON reports FOR ALL
   USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access on report_access" ON report_access;
 CREATE POLICY "Service role full access on report_access"
   ON report_access FOR ALL
   USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access on rls_roles" ON rls_roles;
 CREATE POLICY "Service role full access on rls_roles"
   ON rls_roles FOR ALL
   USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access on report_views" ON report_views;
 CREATE POLICY "Service role full access on report_views"
   ON report_views FOR ALL
   USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access on activity_log" ON activity_log;
 CREATE POLICY "Service role full access on activity_log"
   ON activity_log FOR ALL
   USING (auth.role() = 'service_role');
 
 -- Tenants: gebruikers kunnen hun eigen tenant lezen
+DROP POLICY IF EXISTS "Users can read their tenant" ON tenants;
 CREATE POLICY "Users can read their tenant"
   ON tenants FOR SELECT
   USING (id IN (SELECT public.get_my_tenant_ids()));
 
 -- Tenant users: gebruikers kunnen hun eigen record + collega's lezen
+DROP POLICY IF EXISTS "Users can read own record" ON tenant_users;
 CREATE POLICY "Users can read own record"
   ON tenant_users FOR SELECT
   USING (email = auth.jwt() ->> 'email');
 
+DROP POLICY IF EXISTS "Users can read users in their tenant" ON tenant_users;
 CREATE POLICY "Users can read users in their tenant"
   ON tenant_users FOR SELECT
   USING (tenant_id IN (SELECT public.get_my_tenant_ids()));
 
 -- Reports: gebruikers kunnen gepubliceerde rapporten in hun tenant lezen
+DROP POLICY IF EXISTS "Users can read published reports in their tenant" ON reports;
 CREATE POLICY "Users can read published reports in their tenant"
   ON reports FOR SELECT
   USING (tenant_id IN (SELECT public.get_my_tenant_ids()));
 
 -- Report access: gebruikers kunnen hun eigen toegangsrechten lezen
+DROP POLICY IF EXISTS "Users can read their own report access" ON report_access;
 CREATE POLICY "Users can read their own report access"
   ON report_access FOR SELECT
   USING (user_id IN (SELECT public.get_my_tenant_user_ids()));
 
 -- RLS roles: gebruikers kunnen hun eigen rollen lezen
+DROP POLICY IF EXISTS "Users can read their own rls_roles" ON rls_roles;
 CREATE POLICY "Users can read their own rls_roles"
   ON rls_roles FOR SELECT
   USING (user_id IN (SELECT public.get_my_tenant_user_ids()));
 
 -- Report views: gebruikers kunnen hun eigen report views lezen
+DROP POLICY IF EXISTS "Users can read their own report views" ON report_views;
 CREATE POLICY "Users can read their own report views"
   ON report_views FOR SELECT
   USING (user_id IN (SELECT public.get_my_tenant_user_ids()));
 
 -- Activity log: gebruikers kunnen activiteiten in hun tenant lezen
+DROP POLICY IF EXISTS "Users can read activity in their tenant" ON activity_log;
 CREATE POLICY "Users can read activity in their tenant"
   ON activity_log FOR SELECT
   USING (tenant_id IN (SELECT public.get_my_tenant_ids()));
@@ -282,6 +280,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS tenants_updated_at ON tenants;
 CREATE TRIGGER tenants_updated_at
   BEFORE UPDATE ON tenants
   FOR EACH ROW
