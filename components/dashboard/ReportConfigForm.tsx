@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -14,6 +14,8 @@ import {
   X,
   Shield,
   ShieldOff,
+  ShieldCheck,
+  Database,
   Eye,
   EyeOff,
   Save,
@@ -24,6 +26,7 @@ import {
   Globe,
   Info,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import { ThumbnailUpload } from "@/components/dashboard/ThumbnailUpload";
 
@@ -114,6 +117,45 @@ export function ReportConfigForm({
     type: "success" | "error";
     message: string;
   } | null>(null);
+
+  // ─── RLS Detectie: Power BI dataset rollen ophalen ───
+  const [rlsDetection, setRlsDetection] = useState<{
+    loading: boolean;
+    hasRoles: boolean | null;
+    roles: string[];
+    error: string | null;
+  }>({ loading: true, hasRoles: null, roles: [], error: null });
+
+  const fetchRlsDetection = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/reports/${report.id}/rls-detect`);
+      const data = await res.json();
+
+      setRlsDetection({
+        loading: false,
+        hasRoles: data.hasRoles,
+        roles: data.roles || [],
+        error: data.error || null,
+      });
+
+      // Auto-fill rolnaam als er rollen gedetecteerd zijn en het veld leeg is
+      if (data.roles?.length > 0 && !rlsRoleField) {
+        setRlsRoleField(data.roles[0]);
+      }
+    } catch {
+      setRlsDetection({
+        loading: false,
+        hasRoles: null,
+        roles: [],
+        error: "fetch_error",
+      });
+    }
+  }, [report.id, rlsRoleField]);
+
+  useEffect(() => {
+    fetchRlsDetection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [report.id]);
 
   // ─── Rapport instellingen opslaan ───
   async function handleSaveSettings() {
@@ -570,6 +612,10 @@ export function ReportConfigForm({
                   onClick={() => {
                     setRlsType("row");
                     setShowRlsWarning(false);
+                    // Auto-fill rolnaam bij inschakelen als detectie beschikbaar is
+                    if (rlsDetection.roles.length > 0 && !rlsRoleField) {
+                      setRlsRoleField(rlsDetection.roles[0]);
+                    }
                   }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
                     rlsType === "row"
@@ -582,7 +628,111 @@ export function ReportConfigForm({
                 </button>
               </div>
 
-              {/* RLS uitschakelen waarschuwing */}
+              {/* ─── RLS Detectie status ─── */}
+              {rlsDetection.loading && (
+                <div className="flex items-center gap-2 text-xs text-text-secondary">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Power BI dataset wordt gecontroleerd op RLS-rollen...
+                </div>
+              )}
+
+              {/* Scenario 1: Dataset HEEFT rollen + RLS staat UIT → Waarschuwing */}
+              {!rlsDetection.loading &&
+                rlsDetection.hasRoles === true &&
+                rlsType === "none" && (
+                  <div className="p-4 bg-warning/5 border border-warning/30 rounded-lg">
+                    <div className="flex gap-3">
+                      <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-warning text-sm mb-1">
+                          RLS-rollen gedetecteerd in Power BI
+                        </p>
+                        <p className="text-text-secondary text-xs mb-2">
+                          Dit dataset heeft{" "}
+                          {rlsDetection.roles.length === 1
+                            ? `de rol "${rlsDetection.roles[0]}"`
+                            : `${rlsDetection.roles.length} rollen (${rlsDetection.roles.join(", ")})`}{" "}
+                          geconfigureerd in Power BI, maar RLS staat hier uit.
+                          Alle gebruikers zien de volledige dataset zonder
+                          filters.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRlsType("row");
+                            if (rlsDetection.roles.length > 0 && !rlsRoleField) {
+                              setRlsRoleField(rlsDetection.roles[0]);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-accent text-white hover:bg-accent/90 transition-colors"
+                        >
+                          <Shield className="w-3.5 h-3.5" />
+                          RLS inschakelen
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              {/* Scenario 2: Dataset HEEFT rollen + RLS staat AAN → Bevestiging */}
+              {!rlsDetection.loading &&
+                rlsDetection.hasRoles === true &&
+                rlsType === "row" && (
+                  <div className="p-4 bg-success/5 border border-success/20 rounded-lg">
+                    <div className="flex gap-2 text-sm text-success">
+                      <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium mb-1">
+                          RLS is actief en geverifieerd
+                        </p>
+                        <p className="text-text-secondary text-xs">
+                          Gedetecteerde {rlsDetection.roles.length === 1 ? "rol" : "rollen"} in Power BI:{" "}
+                          <span className="font-medium text-text-primary">
+                            {rlsDetection.roles.join(", ")}
+                          </span>
+                          . De filterwaarde per gebruiker bepaalt welke data
+                          zichtbaar is.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              {/* Scenario 3: Dataset heeft GEEN rollen → Neutrale info */}
+              {!rlsDetection.loading &&
+                rlsDetection.hasRoles === false && (
+                  <div className="p-4 bg-surface-secondary/50 border border-border rounded-lg">
+                    <div className="flex gap-2 text-sm text-text-secondary">
+                      <Database className="w-4 h-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-text-primary mb-1">
+                          Geen RLS-rollen gedetecteerd
+                        </p>
+                        <p className="text-xs">
+                          Er zijn geen RLS-rollen geconfigureerd in dit Power BI
+                          dataset. Alle gebruikers zien dezelfde data, ongeacht
+                          de instelling hierboven.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              {/* Scenario 4: Kon niet detecteren → Grijze fallback */}
+              {!rlsDetection.loading &&
+                rlsDetection.hasRoles === null &&
+                rlsDetection.error && (
+                  <p className="text-xs text-text-secondary/60 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5" />
+                    {rlsDetection.error === "no_dataset_id"
+                      ? "Dataset ID niet ingesteld — RLS-detectie niet beschikbaar."
+                      : rlsDetection.error === "no_pbi_config"
+                      ? "Power BI is niet geconfigureerd — RLS-detectie niet beschikbaar."
+                      : "RLS-configuratie kon niet worden gedetecteerd vanuit Power BI."}
+                  </p>
+                )}
+
+              {/* RLS uitschakelen waarschuwing (bij klik op "Uit" terwijl RLS aan stond) */}
               {showRlsWarning && (
                 <div className="p-4 bg-danger/5 border border-danger/30 rounded-lg">
                   <div className="flex gap-3">
@@ -592,10 +742,9 @@ export function ReportConfigForm({
                         Beveiligingswaarschuwing
                       </p>
                       <p className="text-text-secondary text-xs mb-3">
-                        Als Row-Level Security in Power BI is ingeschakeld maar
-                        hier wordt uitgeschakeld, zien alle gebruikers de
-                        volledige dataset zonder filters. Dit kan leiden tot
-                        ongeautoriseerde toegang tot gevoelige gegevens.
+                        {rlsDetection.hasRoles
+                          ? `Dit dataset heeft actieve RLS-rollen (${rlsDetection.roles.join(", ")}) in Power BI. Als je RLS hier uitschakelt, zien alle gebruikers de volledige dataset zonder filters.`
+                          : "Als Row-Level Security in Power BI is ingeschakeld maar hier wordt uitgeschakeld, zien alle gebruikers de volledige dataset zonder filters. Dit kan leiden tot ongeautoriseerde toegang tot gevoelige gegevens."}
                       </p>
                       <div className="flex gap-2">
                         <button
@@ -621,37 +770,70 @@ export function ReportConfigForm({
                 </div>
               )}
 
-              {/* RLS info */}
-              {rlsType === "row" && (
-                <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg">
-                  <div className="flex gap-2 text-sm text-accent">
-                    <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium mb-1">
-                        RLS is actief voor dit rapport
-                      </p>
-                      <p className="text-text-secondary text-xs">
-                        Zorg dat de rolnaam hieronder exact overeenkomt met de
-                        RLS-rolnaam die is geconfigureerd in Power BI Desktop.
-                        De filterwaarde per gebruiker bepaalt welke data
-                        zichtbaar is.
-                      </p>
+              {/* Fallback RLS info als detectie niet beschikbaar is maar RLS aan staat */}
+              {!rlsDetection.loading &&
+                rlsDetection.hasRoles === null &&
+                rlsType === "row" && (
+                  <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg">
+                    <div className="flex gap-2 text-sm text-accent">
+                      <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium mb-1">
+                          RLS is actief voor dit rapport
+                        </p>
+                        <p className="text-text-secondary text-xs">
+                          Zorg dat de rolnaam hieronder exact overeenkomt met de
+                          RLS-rolnaam die is geconfigureerd in Power BI Desktop.
+                          De filterwaarde per gebruiker bepaalt welke data
+                          zichtbaar is.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
 
             {/* RLS rolnaam (alleen als RLS aan staat) */}
             {rlsType === "row" && (
-              <Input
-                id="rlsRoleField"
-                label="RLS-rolnaam"
-                value={rlsRoleField}
-                onChange={(e) => setRlsRoleField(e.target.value)}
-                placeholder="Bijv. RegioFilter, KlantRol"
-                hint="Moet exact overeenkomen met de rolnaam in Power BI Desktop."
-              />
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="rlsRoleField"
+                  className="block text-sm font-medium text-text-primary"
+                >
+                  RLS-rolnaam
+                </label>
+                {/* Dropdown als meerdere rollen gedetecteerd, anders vrij tekstveld */}
+                {rlsDetection.roles.length > 1 ? (
+                  <div className="relative">
+                    <select
+                      id="rlsRoleField"
+                      value={rlsRoleField}
+                      onChange={(e) => setRlsRoleField(e.target.value)}
+                      className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-surface text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors appearance-none"
+                    >
+                      <option value="">Selecteer een rol...</option>
+                      {rlsDetection.roles.map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-text-secondary absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                ) : (
+                  <Input
+                    id="rlsRoleField"
+                    value={rlsRoleField}
+                    onChange={(e) => setRlsRoleField(e.target.value)}
+                    placeholder="Bijv. RegioFilter, KlantRol"
+                  />
+                )}
+                <p className="text-xs text-text-secondary">
+                  {rlsDetection.roles.length > 0
+                    ? "Automatisch gedetecteerd vanuit Power BI. Selecteer de juiste rol."
+                    : "Moet exact overeenkomen met de rolnaam in Power BI Desktop."}
+                </p>
+              </div>
             )}
 
             {/* PBI info */}

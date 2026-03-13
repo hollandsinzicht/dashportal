@@ -125,6 +125,40 @@ export async function getWorkspaceById(
   return response.json();
 }
 
+// ─── RLS Detectie ───
+
+export interface DatasetRole {
+  name: string;
+  tablePermissions: { name: string; filterExpression?: string }[];
+}
+
+/**
+ * Haalt de RLS-rollen op die geconfigureerd zijn in een Power BI dataset.
+ * Returned een lege array als er geen rollen zijn.
+ */
+export async function getDatasetRoles(
+  accessToken: string,
+  workspaceId: string,
+  datasetId: string
+): Promise<DatasetRole[]> {
+  const response = await fetch(
+    `https://api.powerbi.com/v1.0/myorg/groups/${workspaceId}/datasets/${datasetId}/roles`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
+
+  if (!response.ok) {
+    // 404 = dataset heeft geen rollen, geen error
+    if (response.status === 404) return [];
+    const error = await response.text();
+    throw new Error(`Failed to fetch dataset roles: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.value || [];
+}
+
 export async function testPowerBIConnection(config: TokenConfig) {
   try {
     const accessToken = await getMicrosoftToken(config);
