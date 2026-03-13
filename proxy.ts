@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * DashPortal Middleware — Subdomain Routing
+ * DashPortal Proxy — Subdomain Routing
  *
  * Routing logica:
  *   localhost:3001          → alles normaal (geen subdomain check)
@@ -26,7 +26,7 @@ const PLATFORM_ROUTES = [
 // Routes die bij marketing horen (dashportal.app), niet op platform
 const MARKETING_ROUTES = ["/", "/pricing", "/demo", "/privacy", "/terms"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
 
