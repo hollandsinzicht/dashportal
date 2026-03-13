@@ -132,12 +132,23 @@ export default async function SuperAdminPage() {
                     className="hover:bg-surface-secondary/50 transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/tenants/${tenant.id}`}
-                        className="text-sm font-medium text-primary hover:underline"
-                      >
-                        {tenant.name}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/tenants/${tenant.id}`}
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {tenant.name}
+                        </Link>
+                        {tenant.agency_name && (
+                          <Link
+                            href={`/admin/agencies/${tenant.agency_id}`}
+                            className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] font-medium hover:bg-[var(--color-accent)]/20 transition-colors"
+                            title={`Agency: ${tenant.agency_name}`}
+                          >
+                            {tenant.agency_name}
+                          </Link>
+                        )}
+                      </div>
                       <p className="text-xs text-text-secondary font-mono">
                         {tenant.slug}
                       </p>

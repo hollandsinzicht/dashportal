@@ -12,7 +12,7 @@ export default function DisclaimerPage() {
         Disclaimer
       </h1>
       <p className="text-sm text-text-secondary mb-10">
-        Laatst bijgewerkt: 12 maart 2026
+        Laatst bijgewerkt: 13 maart 2026
       </p>
 
       <div className="prose prose-sm max-w-none text-text-secondary [&_h2]:font-[family-name:var(--font-syne)] [&_h2]:text-text-primary [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-text-primary [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1">
@@ -94,7 +94,38 @@ export default function DisclaimerPage() {
           <li>Activiteits- en gebruikslogboeken</li>
         </ul>
 
-        <h2>6. Beperking van aansprakelijkheid</h2>
+        <h2>6. Agency &amp; Reseller Programma</h2>
+        <p>
+          Dit artikel is aanvullend van toepassing wanneer een Agency
+          gebruikmaakt van het Agency &amp; Reseller Programma om
+          Klantportalen te beheren namens haar klanten.
+        </p>
+        <ul>
+          <li>
+            <strong>DashPortal</strong> is verantwoordelijk voor het beschikbaar
+            houden van het Platform (hosting, infrastructuur, beveiliging),
+            het doorvoeren van updates en bugfixes, het onderhouden van de
+            Microsoft Power BI koppeling, en de technische facturatieverwerking.
+          </li>
+          <li>
+            <strong>De Agency</strong> is verantwoordelijk voor het beheer van
+            Klantportalen, de relatie met en ondersteuning van haar klanten,
+            het correct instellen van toegangsrechten en branding, en de
+            inhoudelijke juistheid van gedeelde Power BI rapporten.
+          </li>
+          <li>
+            DashPortal is niet aansprakelijk voor acties of nalatigheden van
+            de Agency bij het beheer van Klantportalen, noch voor de diensten
+            die de Agency aan haar eigen klanten levert.
+          </li>
+          <li>
+            De Agency vrijwaart DashPortal voor claims van derden (waaronder
+            de klanten van de Agency) die voortvloeien uit het gebruik van
+            het Platform via het Agency-account.
+          </li>
+        </ul>
+
+        <h2>7. Beperking van aansprakelijkheid</h2>
         <p>
           DashPortal is niet aansprakelijk voor:
         </p>
@@ -125,7 +156,7 @@ export default function DisclaimerPage() {
           abonnementskosten heeft betaald.
         </p>
 
-        <h2>7. Beveiliging</h2>
+        <h2>8. Beveiliging</h2>
         <p>
           Wij nemen passende technische maatregelen om de veiligheid van het
           Platform te waarborgen, maar kunnen geen absolute veiligheid
@@ -137,21 +168,21 @@ export default function DisclaimerPage() {
           <li>Het beheer van gebruikerstoegang binnen hun organisatie</li>
         </ul>
 
-        <h2>8. Intellectueel eigendom</h2>
+        <h2>9. Intellectueel eigendom</h2>
         <p>
           Alle intellectuele eigendomsrechten op het Platform (code, design,
           merk) berusten bij DashPortal. Tenants behouden volledig eigendom
           over hun eigen data, branding-materialen en Power BI content.
         </p>
 
-        <h2>9. Wijzigingen</h2>
+        <h2>10. Wijzigingen</h2>
         <p>
           DashPortal behoudt zich het recht voor om deze disclaimer te allen
           tijde te wijzigen. Bij wezenlijke wijzigingen informeren wij je via
           e-mail of een melding in het Platform.
         </p>
 
-        <h2>10. Contact</h2>
+        <h2>11. Contact</h2>
         <p>
           Heb je vragen over deze disclaimer? Neem contact op via{" "}
           <a

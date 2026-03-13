@@ -12,7 +12,7 @@ export default function TermsPage() {
         Algemene Voorwaarden
       </h1>
       <p className="text-sm text-text-secondary mb-10">
-        Laatst bijgewerkt: 12 maart 2026
+        Laatst bijgewerkt: 13 maart 2026
       </p>
 
       <div className="prose prose-sm max-w-none text-text-secondary [&_h2]:font-[family-name:var(--font-syne)] [&_h2]:text-text-primary [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-text-primary [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1">
@@ -38,6 +38,16 @@ export default function TermsPage() {
           <li>
             <strong>DashPortal:</strong> De onderneming die het Platform
             exploiteert en aanbiedt.
+          </li>
+          <li>
+            <strong>Agency:</strong> Een organisatie (zoals een consultancy,
+            adviesbureau of IT-dienstverlener) die via het Agency &amp; Reseller
+            Programma meerdere Tenant-omgevingen beheert namens haar klanten.
+          </li>
+          <li>
+            <strong>Klantportaal:</strong> Een Tenant-omgeving die door een
+            Agency wordt aangemaakt en beheerd ten behoeve van een klant van
+            de Agency.
           </li>
         </ul>
 
@@ -125,8 +135,102 @@ export default function TermsPage() {
           verwijderd.
         </p>
 
-        <h2>6. Gebruik van het Platform</h2>
-        <h3>6.1 Toegestaan gebruik</h3>
+        <h2>6. Agency &amp; Reseller Programma</h2>
+        <h3>6.1 Toepasselijkheid</h3>
+        <p>
+          Dit artikel is aanvullend van toepassing op Agencies die gebruikmaken
+          van het Agency &amp; Reseller Programma. De overige artikelen in deze
+          voorwaarden blijven onverminderd van kracht.
+        </p>
+
+        <h3>6.2 Facturatie voor Agencies</h3>
+        <p>
+          Agencies ontvangen maandelijks één geconsolideerde factuur voor alle
+          actieve Klantportalen. De prijs per Klantportaal wordt bepaald op
+          basis van het aantal actieve gebruikers in dat portaal, conform de op
+          dat moment geldende prijsschijven. De actuele tarieven staan vermeld
+          op de{" "}
+          <a href="/pricing/agencies" className="text-primary hover:underline">
+            agency pricing pagina
+          </a>
+          . Tellingen vinden plaats op de eerste dag van elke kalendermaand.
+        </p>
+
+        <h3>6.3 Definitie van een gebruiker</h3>
+        <p>
+          Een &quot;gebruiker&quot; in het kader van de facturatie is een persoon
+          met een actief account in een Klantportaal, ongeacht of deze persoon
+          in de betreffende maand daadwerkelijk heeft ingelogd. Gedeactiveerde
+          accounts tellen niet mee voor de facturatie.
+        </p>
+
+        <h3>6.4 Verantwoordelijkheden van de Agency</h3>
+        <p>
+          De Agency is verantwoordelijk voor:
+        </p>
+        <ul>
+          <li>
+            Het aanmaken, configureren en beheren van Klantportalen
+          </li>
+          <li>
+            Het correct instellen van toegangsrechten, branding en rapportkoppelingen
+            per Klantportaal
+          </li>
+          <li>
+            De relatie met en ondersteuning van haar eigen klanten
+          </li>
+          <li>
+            Het informeren van haar klanten over de toepasselijke voorwaarden
+            en het privacybeleid van DashPortal
+          </li>
+          <li>
+            Tijdige betaling van de geconsolideerde factuur
+          </li>
+        </ul>
+
+        <h3>6.5 Verantwoordelijkheden van DashPortal</h3>
+        <p>
+          DashPortal is verantwoordelijk voor:
+        </p>
+        <ul>
+          <li>
+            Het beschikbaar houden en onderhouden van het Platform
+            (hosting, infrastructuur, beveiliging)
+          </li>
+          <li>
+            Het doorvoeren van updates, bugfixes en nieuwe functies
+          </li>
+          <li>
+            Het onderhouden van de koppeling met Microsoft Power BI
+            (embed tokens, metadata-sync)
+          </li>
+          <li>
+            Het verwerken van de maandelijkse facturatie via Stripe
+          </li>
+          <li>
+            Technische support bij platformgerelateerde problemen
+          </li>
+        </ul>
+
+        <h3>6.6 White-label en doorverkoop</h3>
+        <p>
+          Agencies mogen het Platform op white-label basis aanbieden aan hun
+          klanten. De Agency is vrij om eigen tarieven te hanteren richting
+          haar klanten. De Agency mag het Platform niet presenteren als een
+          eigen product zonder vermelding dat het draait op DashPortal-technologie,
+          tenzij schriftelijk anders overeengekomen.
+        </p>
+
+        <h3>6.7 Beëindiging Agency-account</h3>
+        <p>
+          Bij beëindiging van het Agency-account worden alle gekoppelde
+          Klantportalen gedeactiveerd na een overgangsperiode van 30 dagen.
+          Gedurende deze periode kan de Agency haar klanten informeren en
+          eventueel zelfstandige Tenant-accounts laten aanmaken.
+        </p>
+
+        <h2>7. Gebruik van het Platform</h2>
+        <h3>7.1 Toegestaan gebruik</h3>
         <p>
           De Tenant mag het Platform gebruiken voor het delen van eigen
           Power BI rapporten met geautoriseerde eindgebruikers. Het Platform
@@ -147,7 +251,7 @@ export default function TermsPage() {
           </li>
         </ul>
 
-        <h3>6.2 Verantwoordelijkheid van de Tenant</h3>
+        <h3>7.2 Verantwoordelijkheid van de Tenant</h3>
         <p>
           De Tenant is verantwoordelijk voor:
         </p>
@@ -167,7 +271,7 @@ export default function TermsPage() {
           </li>
         </ul>
 
-        <h2>7. Beschikbaarheid en onderhoud</h2>
+        <h2>8. Beschikbaarheid en onderhoud</h2>
         <p>
           DashPortal streeft naar een beschikbaarheid van 99,5% op
           maandbasis, exclusief gepland onderhoud en overmacht. Gepland
@@ -179,7 +283,7 @@ export default function TermsPage() {
           storingen in deze diensten.
         </p>
 
-        <h2>8. Intellectueel eigendom</h2>
+        <h2>9. Intellectueel eigendom</h2>
         <p>
           Alle intellectuele eigendomsrechten op het Platform (broncode,
           ontwerp, merknaam) berusten bij DashPortal. De Tenant behoudt
@@ -191,7 +295,7 @@ export default function TermsPage() {
           het weergeven van het Tenant-portaal.
         </p>
 
-        <h2>9. Gegevensbescherming</h2>
+        <h2>10. Gegevensbescherming</h2>
         <p>
           DashPortal verwerkt persoonsgegevens conform de Algemene
           Verordening Gegevensbescherming (AVG). Voor details over welke
@@ -208,7 +312,7 @@ export default function TermsPage() {
           overeenkomst.
         </p>
 
-        <h2>10. Aansprakelijkheid</h2>
+        <h2>11. Aansprakelijkheid</h2>
         <p>
           De aansprakelijkheid van DashPortal is beperkt tot het bedrag
           dat de Tenant in de 12 maanden voorafgaand aan het schadeveroorzakende
@@ -223,7 +327,7 @@ export default function TermsPage() {
           voor meer details.
         </p>
 
-        <h2>11. Overmacht</h2>
+        <h2>12. Overmacht</h2>
         <p>
           DashPortal is niet gehouden tot nakoming van enige verplichting
           indien zij daartoe verhinderd is als gevolg van overmacht. Onder
@@ -231,7 +335,7 @@ export default function TermsPage() {
           internetproblemen, stroomuitval, natuurrampen en overheidsmaatregelen.
         </p>
 
-        <h2>12. Wijzigingen</h2>
+        <h2>13. Wijzigingen</h2>
         <p>
           DashPortal kan deze voorwaarden wijzigen. Wezenlijke wijzigingen
           worden minimaal 30 dagen vooraf per e-mail aangekondigd. Voortgezet
@@ -239,14 +343,14 @@ export default function TermsPage() {
           voorwaarden.
         </p>
 
-        <h2>13. Toepasselijk recht</h2>
+        <h2>14. Toepasselijk recht</h2>
         <p>
           Op deze voorwaarden en het gebruik van het Platform is Nederlands
           recht van toepassing. Geschillen worden voorgelegd aan de bevoegde
           rechter in het arrondissement waar DashPortal gevestigd is.
         </p>
 
-        <h2>14. Contact</h2>
+        <h2>15. Contact</h2>
         <p>
           Heb je vragen over deze voorwaarden? Neem contact op via{" "}
           <a

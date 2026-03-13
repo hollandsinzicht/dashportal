@@ -222,3 +222,37 @@ export function getMinPlanForSchedule(schedule: string): PlanId {
   if (schedule === "daily" || schedule === "weekly") return "business";
   return "starter";
 }
+
+// ─── Agency-managed tenant checks ───────────────────────────
+
+interface TenantForAgencyGating {
+  billing_owner?: string | null;
+  agency_id?: string | null;
+  client_can_invite_users?: boolean | null;
+  client_can_edit_branding?: boolean | null;
+}
+
+/**
+ * Check of een tenant door een agency wordt beheerd.
+ */
+export function isAgencyManaged(tenant: TenantForAgencyGating): boolean {
+  return tenant.billing_owner === "agency" && !!tenant.agency_id;
+}
+
+/**
+ * Check of een agency-managed klant zelf gebruikers mag uitnodigen.
+ * Niet-agency tenants mogen altijd uitnodigen.
+ */
+export function canClientInviteUsers(tenant: TenantForAgencyGating): boolean {
+  if (!isAgencyManaged(tenant)) return true;
+  return tenant.client_can_invite_users !== false;
+}
+
+/**
+ * Check of een agency-managed klant branding mag aanpassen.
+ * Niet-agency tenants mogen altijd branding bewerken.
+ */
+export function canClientEditBranding(tenant: TenantForAgencyGating): boolean {
+  if (!isAgencyManaged(tenant)) return true;
+  return tenant.client_can_edit_branding !== false;
+}

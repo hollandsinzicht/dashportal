@@ -10,6 +10,7 @@ import {
   Star,
   ChevronDown,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import { DashboardBouwenCTA } from "@/components/shared/DashboardBouwenCTA";
 import {
@@ -349,6 +350,42 @@ export default function PricingPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      {/* ─── Agency Banner ─── */}
+      <section className="py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            className="relative bg-surface border border-border rounded-2xl p-8 md:p-10 overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Building2 className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-[family-name:var(--font-syne)] text-xl font-bold text-text-primary">
+                  Ben je een agency of consultancy?
+                </h3>
+                <p className="text-sm text-text-secondary mt-1">
+                  Beheer meerdere klantportalen onder één account met
+                  geconsolideerde facturatie. Vanaf &euro;79 per klant per maand.
+                </p>
+              </div>
+              <Link
+                href="/pricing/agencies"
+                className="inline-flex items-center gap-2 h-11 px-6 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 shrink-0"
+              >
+                Bekijk agency pricing
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 

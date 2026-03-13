@@ -27,12 +27,16 @@ export interface TenantWithCounts {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Agency
+  agency_id: string | null;
   // Aggregated
   user_count: number;
   report_count: number;
   workspace_count: number;
   admin_email: string | null;
   admin_name: string | null;
+  agency_name: string | null;
+  agency_slug: string | null;
 }
 
 export interface PlatformStats {
@@ -79,7 +83,7 @@ export interface ActivityLogEntry {
 export async function getTenantsWithCounts(): Promise<TenantWithCounts[]> {
   const supabase = await createServiceClient();
 
-  const [tenantsRes, usersRes, reportsRes, workspacesRes, adminsRes] =
+  const [tenantsRes, usersRes, reportsRes, workspacesRes, adminsRes, agenciesRes] =
     await Promise.all([
       supabase
         .from("tenants")
@@ -99,6 +103,9 @@ export async function getTenantsWithCounts(): Promise<TenantWithCounts[]> {
         .select("tenant_id, email, name")
         .eq("role", "admin")
         .eq("is_active", true),
+      supabase
+        .from("agencies")
+        .select("id, name, slug"),
     ]);
 
   const tenants = tenantsRes.data || [];
@@ -106,6 +113,13 @@ export async function getTenantsWithCounts(): Promise<TenantWithCounts[]> {
   const allReports = reportsRes.data || [];
   const allWorkspaces = workspacesRes.data || [];
   const allAdmins = adminsRes.data || [];
+  const allAgencies = agenciesRes.data || [];
+
+  // Agency lookup map
+  const agencyMap = new Map<string, { name: string; slug: string }>();
+  for (const agency of allAgencies) {
+    agencyMap.set(agency.id, { name: agency.name, slug: agency.slug });
+  }
 
   // Group counts by tenant_id
   const userCounts = groupCount(allUsers, "tenant_id");
@@ -125,6 +139,7 @@ export async function getTenantsWithCounts(): Promise<TenantWithCounts[]> {
 
   return tenants.map((t) => {
     const admin = adminMap.get(t.id);
+    const agency = t.agency_id ? agencyMap.get(t.agency_id) : null;
     return {
       ...t,
       subscription_plan: t.subscription_plan || "starter",
@@ -135,6 +150,8 @@ export async function getTenantsWithCounts(): Promise<TenantWithCounts[]> {
       workspace_count: workspaceCounts.get(t.id) || 0,
       admin_email: admin?.email || null,
       admin_name: admin?.name || null,
+      agency_name: agency?.name || null,
+      agency_slug: agency?.slug || null,
     };
   });
 }

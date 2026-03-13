@@ -44,6 +44,12 @@ export default function MarketingLayout({
                 Demo
               </Link>
               <Link
+                href="/pricing/agencies"
+                className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                Partners
+              </Link>
+              <Link
                 href="/contact"
                 className="text-sm text-text-secondary hover:text-text-primary transition-colors"
               >

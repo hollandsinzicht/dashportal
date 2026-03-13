@@ -4,6 +4,7 @@ import { getPlanConfig } from "@/lib/stripe/config";
 import {
   Calendar,
   AlertTriangle,
+  Building2,
   CheckCircle2,
   Circle,
   XCircle,
@@ -40,12 +41,46 @@ export default async function BillingPage() {
   const { data: tenant } = await serviceClient
     .from("tenants")
     .select(
-      "id, name, subscription_plan, subscription_status, trial_ends_at, current_period_end, cancel_at_period_end, stripe_customer_id, stripe_subscription_id"
+      "id, name, subscription_plan, subscription_status, trial_ends_at, current_period_end, cancel_at_period_end, stripe_customer_id, stripe_subscription_id, billing_owner, agency_id"
     )
     .eq("id", tenantUser.tenant_id)
     .single();
 
   if (!tenant) redirect("/dashboard");
+
+  // Agency-managed tenants: toon eenvoudige melding
+  const isAgencyManaged = tenant.billing_owner === "agency" && !!tenant.agency_id;
+
+  if (isAgencyManaged) {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <div>
+          <h1 className="font-[family-name:var(--font-syne)] text-2xl font-bold text-text-primary">
+            Facturatie &amp; Abonnement
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            Overzicht van je abonnement.
+          </p>
+        </div>
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-text-primary">
+                Facturatie wordt beheerd door je agency
+              </p>
+              <p className="text-sm text-text-secondary mt-1">
+                Je portaal wordt beheerd en gefactureerd via een agency account.
+                Voor vragen over facturatie kun je contact opnemen met je agency beheerder.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const plan = getPlanConfig(tenant.subscription_plan || "starter");
   const status = tenant.subscription_status || "active";

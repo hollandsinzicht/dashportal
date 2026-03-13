@@ -54,9 +54,10 @@ interface SettingsFormProps {
     pbi_client_id?: string | null;
     pbi_workspace_ids?: string[] | null;
   };
+  readOnly?: boolean;
 }
 
-export function SettingsForm({ tenant }: SettingsFormProps) {
+export function SettingsForm({ tenant, readOnly = false }: SettingsFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

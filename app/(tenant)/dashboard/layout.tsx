@@ -94,7 +94,7 @@ export default async function DashboardLayout({
   // ─── 3. Tenant data ophalen ───
   const { data: tenant, error: tenantError } = await supabase
     .from("tenants")
-    .select("id, slug, name, logo_url, primary_color, accent_color, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id")
+    .select("id, slug, name, logo_url, primary_color, accent_color, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, agency_id, billing_owner, client_can_invite_users, client_can_edit_branding")
     .eq("id", tenantUser.tenant_id)
     .single();
 

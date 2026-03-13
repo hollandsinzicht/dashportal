@@ -27,9 +27,10 @@ interface UsersTableProps {
   users: TenantUser[];
   tenantId: string;
   currentUserEmail: string;
+  readOnly?: boolean;
 }
 
-export function UsersTable({ users, tenantId, currentUserEmail }: UsersTableProps) {
+export function UsersTable({ users, tenantId, currentUserEmail, readOnly = false }: UsersTableProps) {
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   return (
@@ -44,10 +45,12 @@ export function UsersTable({ users, tenantId, currentUserEmail }: UsersTableProp
               Beheer de gebruikers van je portaal.
             </p>
           </div>
-          <Button onClick={() => setShowInviteModal(true)}>
-            <Plus className="w-4 h-4" />
-            Uitnodigen
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => setShowInviteModal(true)}>
+              <Plus className="w-4 h-4" />
+              Uitnodigen
+            </Button>
+          )}
         </div>
 
         {users.length === 0 ? (
@@ -60,10 +63,12 @@ export function UsersTable({ users, tenantId, currentUserEmail }: UsersTableProp
               Nodig je eerste gebruikers uit om toegang te krijgen tot je
               dataportaal.
             </p>
-            <Button onClick={() => setShowInviteModal(true)}>
-              <Plus className="w-4 h-4" />
-              Eerste gebruiker uitnodigen
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setShowInviteModal(true)}>
+                <Plus className="w-4 h-4" />
+                Eerste gebruiker uitnodigen
+              </Button>
+            )}
           </div>
         ) : (
           <div className="bg-surface rounded-xl border border-border overflow-hidden">

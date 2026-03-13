@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { canUseFeature } from "@/lib/features/gates";
+import { canUseFeature, canClientInviteUsers } from "@/lib/features/gates";
 import { UsersTable } from "@/components/dashboard/UsersTable";
 import { UserLimitMeterWrapper } from "@/components/dashboard/UserLimitMeterWrapper";
 import { Users } from "lucide-react";
@@ -39,7 +39,7 @@ export default async function UsersPage() {
 
     serviceClient
       .from("tenants")
-      .select("subscription_plan, subscription_status, trial_ends_at")
+      .select("subscription_plan, subscription_status, trial_ends_at, agency_id, billing_owner, client_can_invite_users")
       .eq("id", tenantId)
       .single(),
   ]);
@@ -58,8 +58,21 @@ export default async function UsersPage() {
     "microsoft_sso"
   );
 
+  // Agency-managed: check of klant zelf gebruikers mag uitnodigen
+  const invitesAllowed = canClientInviteUsers({
+    agency_id: tenantResult.data?.agency_id,
+    billing_owner: tenantResult.data?.billing_owner,
+    client_can_invite_users: tenantResult.data?.client_can_invite_users,
+  });
+
   return (
     <div className="space-y-6">
+      {!invitesAllowed && (
+        <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-sm text-text-secondary">
+          Gebruikersbeheer wordt beheerd door je agency. Neem contact op met je agency beheerder om gebruikers toe te voegen of te wijzigen.
+        </div>
+      )}
+
       <UserLimitMeterWrapper
         tenantId={tenantId}
         plan={plan}
@@ -67,7 +80,7 @@ export default async function UsersPage() {
       />
 
       {/* Azure AD Import knop (Business+ only) */}
-      {ssoEnabled && (
+      {ssoEnabled && invitesAllowed && (
         <div className="flex justify-end">
           <Link
             href="/dashboard/users/import"
@@ -83,6 +96,7 @@ export default async function UsersPage() {
         users={users}
         tenantId={tenantId}
         currentUserEmail={user.email!}
+        readOnly={!invitesAllowed}
       />
     </div>
   );

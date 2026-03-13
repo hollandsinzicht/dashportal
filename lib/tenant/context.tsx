@@ -22,6 +22,11 @@ export interface TenantContextValue {
   stripeCustomerId: string | null;
   isTrialActive: boolean;
   trialDaysRemaining: number;
+  // Agency-managed velden
+  agencyId: string | null;
+  billingOwner: string;
+  clientCanInviteUsers: boolean;
+  clientCanEditBranding: boolean;
 }
 
 // ─── Context ───
@@ -38,6 +43,10 @@ interface TenantProviderProps {
     subscription_status?: string;
     trial_ends_at?: string | null;
     stripe_customer_id?: string | null;
+    agency_id?: string | null;
+    billing_owner?: string | null;
+    client_can_invite_users?: boolean | null;
+    client_can_edit_branding?: boolean | null;
   };
   children: ReactNode;
 }
@@ -66,6 +75,10 @@ export function TenantProvider({ tenant, children }: TenantProviderProps) {
     stripeCustomerId: tenant.stripe_customer_id || null,
     isTrialActive: checkTrialActive(tenantForGating),
     trialDaysRemaining: calcTrialDays(tenantForGating),
+    agencyId: tenant.agency_id || null,
+    billingOwner: tenant.billing_owner || "self",
+    clientCanInviteUsers: tenant.client_can_invite_users !== false,
+    clientCanEditBranding: tenant.client_can_edit_branding !== false,
   };
 
   return (
