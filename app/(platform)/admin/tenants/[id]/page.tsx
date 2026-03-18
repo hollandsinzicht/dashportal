@@ -28,6 +28,8 @@ import {
 } from "@/lib/admin/helpers";
 import { AdminUserActions } from "@/components/admin/AdminUserActions";
 import { AdminTenantActions } from "@/components/admin/AdminTenantActions";
+import { calculateTierPrice } from "@/lib/agency/pricing";
+import { createServiceClient } from "@/lib/supabase/server";
 
 export default async function TenantDetailPage({
   params,
@@ -46,7 +48,33 @@ export default async function TenantDetailPage({
   );
   const adminUser = users.find((u) => u.role === "admin");
   const hasPbiConnection = !!(tenant.pbi_tenant_id && tenant.pbi_client_id);
-  const isAgencyManaged = !!(tenant as Record<string, unknown>).agency_id;
+  const agencyId = (tenant as Record<string, unknown>).agency_id as string | null;
+  const isAgencyManaged = !!agencyId;
+
+  // Haal agency tier info op als agency-managed
+  let agencyTierLabel: string | null = null;
+  let agencyTierPrice = 0;
+  let agencyTierMax: number | null = null;
+  if (isAgencyManaged && agencyId) {
+    const svc = await createServiceClient();
+    const { data: tiers } = await svc
+      .from("agency_pricing_tiers")
+      .select("min_users, max_users, price_per_month, label")
+      .eq("agency_id", agencyId)
+      .order("sort_order", { ascending: true });
+
+    if (tiers && tiers.length > 0) {
+      const tierResult = calculateTierPrice(usage.currentUsers, tiers);
+      agencyTierLabel = tierResult.label;
+      agencyTierPrice = tierResult.price;
+      // Vind de max van de huidige tier
+      const currentTier = tiers.find((t) =>
+        usage.currentUsers >= t.min_users &&
+        (t.max_users === null || usage.currentUsers <= t.max_users)
+      );
+      agencyTierMax = currentTier?.max_users ?? null;
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,28 +229,61 @@ export default async function TenantDetailPage({
         <Card>
           <CardTitle className="mb-4">Gebruik</CardTitle>
           <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-text-secondary">Gebruikers</span>
-                <span className="text-sm font-medium text-text-primary">
-                  {usage.currentUsers} / {usage.isUnlimited ? "\u221E" : usage.maxUsers}
-                </span>
-              </div>
-              {!usage.isUnlimited && (
-                <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      usage.percentageUsed > 80
-                        ? "bg-danger"
-                        : usage.percentageUsed > 60
-                          ? "bg-warning"
-                          : "bg-success"
-                    }`}
-                    style={{ width: `${Math.min(usage.percentageUsed, 100)}%` }}
-                  />
+            {isAgencyManaged ? (
+              /* Agency-managed: toon tier info i.p.v. plan limiet */
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-text-secondary">Gebruikers</span>
+                  <span className="text-sm font-medium text-text-primary">
+                    {usage.currentUsers}
+                  </span>
                 </div>
-              )}
-            </div>
+                {agencyTierLabel && (
+                  <div className="p-3 bg-[var(--color-accent)]/5 border border-[var(--color-accent)]/10 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-text-primary">
+                          {agencyTierLabel}
+                        </p>
+                        <p className="text-xs text-text-secondary">
+                          {agencyTierMax
+                            ? `Tot ${agencyTierMax} gebruikers in deze schijf`
+                            : "Onbeperkt gebruikers"}
+                        </p>
+                      </div>
+                      <p className="text-lg font-bold text-[var(--color-accent)]">
+                        {agencyTierPrice > 0 ? `\u20AC${agencyTierPrice}` : "Op maat"}
+                        <span className="text-xs font-normal text-text-secondary">/mnd</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Direct: plan-based limiet */
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-text-secondary">Gebruikers</span>
+                  <span className="text-sm font-medium text-text-primary">
+                    {usage.currentUsers} / {usage.isUnlimited ? "\u221E" : usage.maxUsers}
+                  </span>
+                </div>
+                {!usage.isUnlimited && (
+                  <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        usage.percentageUsed > 80
+                          ? "bg-danger"
+                          : usage.percentageUsed > 60
+                            ? "bg-warning"
+                            : "bg-success"
+                      }`}
+                      style={{ width: `${Math.min(usage.percentageUsed, 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div>
                 <p className="text-2xl font-bold text-text-primary">

@@ -32,6 +32,25 @@ export async function getTenantUsage(
     .eq("is_active", true);
 
   const currentUsers = count ?? 0;
+
+  // Check of tenant agency-managed is — dan geen harde limiet
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("agency_id")
+    .eq("id", tenantId)
+    .single();
+
+  if (tenant?.agency_id) {
+    // Agency-managed: onbeperkt users (agency betaalt per tier)
+    return {
+      currentUsers,
+      maxUsers: -1,
+      remaining: -1,
+      percentageUsed: 0,
+      isUnlimited: true,
+    };
+  }
+
   const limits = getPlanLimits(plan);
   const maxUsers = limits.users;
   const isUnlimited = maxUsers === -1;

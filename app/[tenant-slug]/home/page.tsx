@@ -143,6 +143,23 @@ export default async function TenantHomePage({
         {/* Debug panel — voeg ?debug=true toe aan URL om te tonen */}
         {showDebug && <DebugPanel tenantId={tenant.id} tenantUserId={tenantUser.id} role={tenantUser.role} workspaces={workspaces} visibleWorkspaces={visibleWorkspaces} />}
       </main>
+
+      {/* Footer met legal links */}
+      <footer className="border-t border-border py-4 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <p className="text-[10px] text-text-secondary">
+            Powered by DashPortal
+          </p>
+          <div className="flex items-center gap-3">
+            <a href="/terms" target="_blank" className="text-[10px] text-text-secondary hover:text-text-primary transition-colors">
+              Voorwaarden
+            </a>
+            <a href="/privacy" target="_blank" className="text-[10px] text-text-secondary hover:text-text-primary transition-colors">
+              Privacy
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

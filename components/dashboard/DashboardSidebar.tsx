@@ -102,11 +102,19 @@ export function DashboardSidebar({ role, tenant, agencyManaged }: DashboardSideb
         })}
       </nav>
 
-      {/* Footer: tenant slug */}
-      <div className="px-5 py-4 border-t border-border">
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-border space-y-2">
         <p className="text-xs text-text-secondary truncate">
           {tenant.slug}.dashportal.app
         </p>
+        <div className="flex items-center gap-3">
+          <a href="/terms" target="_blank" className="text-[10px] text-text-secondary hover:text-text-primary transition-colors">
+            Voorwaarden
+          </a>
+          <a href="/privacy" target="_blank" className="text-[10px] text-text-secondary hover:text-text-primary transition-colors">
+            Privacy
+          </a>
+        </div>
       </div>
     </aside>
   );

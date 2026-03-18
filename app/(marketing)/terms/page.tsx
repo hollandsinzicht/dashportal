@@ -12,7 +12,7 @@ export default function TermsPage() {
         Algemene Voorwaarden
       </h1>
       <p className="text-sm text-text-secondary mb-10">
-        Laatst bijgewerkt: 13 maart 2026
+        Laatst bijgewerkt: 18 maart 2026
       </p>
 
       <div className="prose prose-sm max-w-none text-text-secondary [&_h2]:font-[family-name:var(--font-syne)] [&_h2]:text-text-primary [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-text-primary [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1">
@@ -310,6 +310,41 @@ export default function TermsPage() {
           Eindgebruikers verwerkt, treedt DashPortal op als verwerker.
           Een verwerkersovereenkomst (DPA) is onderdeel van deze
           overeenkomst.
+        </p>
+
+        <h3>10.1 Gegevensverwerking bij directe klanten</h3>
+        <p>
+          Bij directe klanten verwerkt DashPortal de volgende persoonsgegevens:
+          namen, e-mailadressen, rollen, inloggegevens en activiteitenlogboeken.
+          Deze gegevens worden uitsluitend verwerkt ten behoeve van het functioneren
+          van het Platform en worden niet gedeeld met derden, tenzij wettelijk vereist.
+        </p>
+
+        <h3>10.2 Gegevensverwerking bij Agency klanten</h3>
+        <p>
+          Wanneer een Agency via het Platform klantportalen beheert, verwerkt
+          DashPortal persoonsgegevens van de eindgebruikers van de klanten van
+          de Agency. In deze constructie:
+        </p>
+        <ul>
+          <li>De <strong>Agency</strong> is verwerkingsverantwoordelijke voor de gegevens van haar klanten.</li>
+          <li><strong>DashPortal</strong> treedt op als verwerker namens de Agency.</li>
+          <li>De Agency is verantwoordelijk voor het informeren van haar klanten over de gegevensverwerking via DashPortal.</li>
+          <li>DashPortal verwerkt uitsluitend: namen, e-mailadressen, rollen, inloggegevens, gebruikersaantallen (voor facturatie) en activiteitenlogboeken.</li>
+          <li>DashPortal heeft <strong>geen</strong> toegang tot de inhoud van Power BI rapporten — deze blijven bij Microsoft.</li>
+        </ul>
+
+        <h3>10.3 Deactivering en gegevensretentie</h3>
+        <p>
+          Bij deactivering van een account (door de Tenant, Agency of DashPortal)
+          worden persoonsgegevens gedeactiveerd maar niet direct verwijderd.
+          Na een retentieperiode van 90 dagen worden gedeactiveerde gegevens
+          permanent verwijderd, tenzij wettelijke bewaarplichten dit verhinderen.
+        </p>
+        <p>
+          Bij deactivering van een Agency worden alle bijbehorende klantportalen
+          en gebruikersgegevens meegedeactiveerd. De Agency is verantwoordelijk
+          voor het informeren van haar klanten over deze deactivering.
         </p>
 
         <h2>11. Aansprakelijkheid</h2>

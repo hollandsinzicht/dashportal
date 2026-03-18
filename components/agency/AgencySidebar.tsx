@@ -94,6 +94,21 @@ export function AgencySidebar({ role, agency }: AgencySidebarProps) {
           );
         })}
       </nav>
+
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-border space-y-2">
+        <p className="text-xs text-muted truncate">
+          {agency.slug}.dashportal.app
+        </p>
+        <div className="flex items-center gap-3">
+          <a href="/terms" target="_blank" className="text-[10px] text-muted hover:text-foreground transition-colors">
+            Voorwaarden
+          </a>
+          <a href="/privacy" target="_blank" className="text-[10px] text-muted hover:text-foreground transition-colors">
+            Privacy
+          </a>
+        </div>
+      </div>
     </aside>
   );
 }

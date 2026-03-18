@@ -22,6 +22,7 @@ import {
 } from "@/lib/agency/queries";
 import { formatEuro } from "@/lib/agency/pricing";
 import { formatDate } from "@/lib/admin/helpers";
+import { AdminAgencyActions } from "@/components/admin/AdminAgencyActions";
 
 export default async function AdminAgencyDetailPage({
   params,
@@ -64,6 +65,16 @@ export default async function AdminAgencyDetailPage({
           </Badge>
         </div>
         <p className="text-text-secondary text-sm font-mono">{agency.slug}</p>
+      </div>
+
+      {/* Agency acties */}
+      <div className="mb-6">
+        <AdminAgencyActions
+          agencyId={agency.id}
+          agencyName={agency.name}
+          isActive={agency.is_active}
+          clientCount={stats.total_clients}
+        />
       </div>
 
       {/* KPI Bar */}

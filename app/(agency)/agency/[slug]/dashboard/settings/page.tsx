@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { getAgencyBySlug, getAgencyPricingTiers } from "@/lib/agency/queries";
+import { getAgencyBySlug, getAgencyPricingTiers, getAgencyDashboardStats } from "@/lib/agency/queries";
 import { formatEuro } from "@/lib/agency/pricing";
 import { Settings, Palette, Building2, CreditCard, Globe } from "lucide-react";
+import { DeactivateAgencyButton } from "@/components/agency/DeactivateAgencyButton";
 
 export default async function AgencySettingsPage({
   params,
@@ -12,7 +13,10 @@ export default async function AgencySettingsPage({
   const agency = await getAgencyBySlug(slug);
   if (!agency) redirect("/");
 
-  const tiers = await getAgencyPricingTiers(agency.id);
+  const [tiers, stats] = await Promise.all([
+    getAgencyPricingTiers(agency.id),
+    getAgencyDashboardStats(agency.id),
+  ]);
   const details = agency.company_details || {};
 
   return (
@@ -140,15 +144,14 @@ export default async function AgencySettingsPage({
           <h2 className="font-semibold text-danger">Gevarenzone</h2>
         </div>
         <p className="text-sm text-muted mb-4">
-          Het deactiveren van je agency account verbergt je dashboard en stopt de facturatie.
-          Klantportalen blijven bereikbaar.
+          Het deactiveren van je agency account deactiveert je dashboard, alle teamleden
+          en alle klantportalen. Neem contact op met DashPortal support om te heractiveren.
         </p>
-        <button
-          disabled
-          className="px-4 py-2 rounded-lg border border-danger/30 text-danger text-sm font-medium opacity-50 cursor-not-allowed"
-        >
-          Agency deactiveren (binnenkort)
-        </button>
+        <DeactivateAgencyButton
+          agencyId={agency.id}
+          agencyName={agency.name}
+          clientCount={stats.total_clients}
+        />
       </div>
     </div>
   );
