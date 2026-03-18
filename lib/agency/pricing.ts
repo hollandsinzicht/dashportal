@@ -5,27 +5,27 @@ import type { AgencyPricingTier } from "./types";
 export const DEFAULT_AGENCY_TIERS: Omit<AgencyPricingTier, "id" | "agency_id" | "created_at">[] = [
   {
     min_users: 1,
-    max_users: 25,
+    max_users: 10,
     price_per_month: 79,
     label: "Starter",
     sort_order: 0,
   },
   {
-    min_users: 26,
-    max_users: 100,
+    min_users: 11,
+    max_users: 30,
     price_per_month: 199,
-    label: "Growth",
+    label: "Business",
     sort_order: 1,
   },
   {
-    min_users: 101,
-    max_users: 250,
+    min_users: 31,
+    max_users: 150,
     price_per_month: 399,
-    label: "Professional",
+    label: "Scale",
     sort_order: 2,
   },
   {
-    min_users: 251,
+    min_users: 151,
     max_users: null, // onbeperkt
     price_per_month: 0, // custom pricing — op aanvraag
     label: "Enterprise",

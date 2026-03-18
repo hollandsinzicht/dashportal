@@ -77,9 +77,9 @@ export function getUpgradeSuggestion(
 ): { planName: string; planId: PlanId; userLimit: string } | null {
   switch (plan as PlanId) {
     case "starter":
-      return { planName: "Business", planId: "business", userLimit: "50" };
+      return { planName: "Business", planId: "business", userLimit: "30" };
     case "business":
-      return { planName: "Scale", planId: "scale", userLimit: "200" };
+      return { planName: "Scale", planId: "scale", userLimit: "150" };
     case "scale":
       return {
         planName: "Enterprise",

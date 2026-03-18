@@ -57,7 +57,7 @@ export const PLAN_CONFIG: Record<PlanId, PlanConfig> = {
     limits: { workspaces: -1, users: 10, reports: -1 },
     features: [
       "Onbeperkt werkruimtes",
-      "10 gebruikers",
+      "Tot 10 gebruikers",
       "Onbeperkt rapporten",
       "Eigen branding",
       "E-mail authenticatie",
@@ -69,10 +69,10 @@ export const PLAN_CONFIG: Record<PlanId, PlanConfig> = {
     name: "Business",
     price: 249,
     stripePriceId: process.env.STRIPE_PRICE_BUSINESS || null,
-    limits: { workspaces: -1, users: 50, reports: -1 },
+    limits: { workspaces: -1, users: 30, reports: -1 },
     features: [
       "Onbeperkt werkruimtes",
-      "50 gebruikers",
+      "Tot 30 gebruikers",
       "Onbeperkt rapporten",
       "Eigen domein",
       "Microsoft SSO",
@@ -87,10 +87,10 @@ export const PLAN_CONFIG: Record<PlanId, PlanConfig> = {
     name: "Scale",
     price: 499,
     stripePriceId: process.env.STRIPE_PRICE_SCALE || null,
-    limits: { workspaces: -1, users: 200, reports: -1 },
+    limits: { workspaces: -1, users: 150, reports: -1 },
     features: [
       "Onbeperkt werkruimtes",
-      "200 gebruikers",
+      "Tot 150 gebruikers",
       "Onbeperkt rapporten",
       "Alles van Business",
       "Geavanceerde analytics",
@@ -104,7 +104,7 @@ export const PLAN_CONFIG: Record<PlanId, PlanConfig> = {
     stripePriceId: null,
     limits: { workspaces: -1, users: -1, reports: -1 },
     features: [
-      "Onbeperkt alles",
+      "151+ gebruikers",
       "Alles van Scale",
       "SLA garantie",
       "Dedicated support",

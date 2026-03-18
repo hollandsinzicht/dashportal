@@ -24,28 +24,28 @@ import {
 const AGENCY_TIERS = [
   {
     label: "Starter",
-    users: "1 – 25 gebruikers bij je klant",
+    users: "1 – 10 gebruikers bij je klant",
     price: 79,
     description: "Ideaal voor kleinere klanten en startende portalen.",
     highlighted: false,
   },
   {
-    label: "Growth",
-    users: "26 – 100 gebruikers bij je klant",
+    label: "Business",
+    users: "11 – 30 gebruikers bij je klant",
     price: 199,
     description: "Voor groeiende klantomgevingen met meer gebruikers.",
     highlighted: true,
   },
   {
-    label: "Professional",
-    users: "101 – 250 gebruikers bij je klant",
+    label: "Scale",
+    users: "31 – 150 gebruikers bij je klant",
     price: 399,
     description: "Voor grote klanten met complexe rapportage-behoeften.",
     highlighted: false,
   },
   {
     label: "Enterprise",
-    users: "251+ gebruikers bij je klant",
+    users: "151+ gebruikers bij je klant",
     price: 0,
     description: "Maatwerk pricing voor de allergrootste omgevingen.",
     highlighted: false,
@@ -127,7 +127,7 @@ const AGENCY_FAQ = [
   {
     question: "Hoe wordt de prijs per klant berekend?",
     answer:
-      "De prijs per klantportaal is gebaseerd op het aantal actieve gebruikers van die klant. Heeft jouw klant 104 gebruikers in hun portaal? Dan valt dat portaal in de Professional schijf (101–250 gebruikers) en betaal je €399/maand voor die klant. Elke klant wordt apart berekend op basis van hun eigen gebruikersaantallen.",
+      "De prijs per klantportaal is gebaseerd op het aantal actieve gebruikers van die klant. Heeft jouw klant 45 gebruikers in hun portaal? Dan valt dat portaal in de Scale schijf (31–150 gebruikers) en betaal je €399/maand voor die klant. Elke klant wordt apart berekend op basis van hun eigen gebruikersaantallen.",
   },
   {
     question: "Zijn er opstartkosten of een minimale afname?",
@@ -152,7 +152,7 @@ const AGENCY_FAQ = [
   {
     question: "Kan ik aangepaste prijsschijven instellen?",
     answer:
-      "Ja. In je agency dashboard kun je de standaard prijsschijven aanpassen of extra schijven toevoegen. Voor 251+ gebruikers bieden we maatwerk pricing — neem contact op zodat we samen een passende afspraak maken.",
+      "Ja. In je agency dashboard kun je de standaard prijsschijven aanpassen of extra schijven toevoegen. Voor 151+ gebruikers bieden we maatwerk pricing — neem contact op zodat we samen een passende afspraak maken.",
   },
 ];
 
@@ -591,11 +591,11 @@ export default function AgencyPricingPage() {
               </thead>
               <tbody>
                 {[
-                  { name: "Klant A", users: 12, tier: "Starter", price: 79 },
+                  { name: "Klant A", users: 5, tier: "Starter", price: 79 },
                   { name: "Klant B", users: 8, tier: "Starter", price: 79 },
-                  { name: "Klant C", users: 45, tier: "Growth", price: 199 },
-                  { name: "Klant D", users: 80, tier: "Growth", price: 199 },
-                  { name: "Klant E", users: 150, tier: "Professional", price: 399 },
+                  { name: "Klant C", users: 25, tier: "Business", price: 199 },
+                  { name: "Klant D", users: 30, tier: "Business", price: 199 },
+                  { name: "Klant E", users: 120, tier: "Scale", price: 399 },
                 ].map((row, idx) => (
                   <tr
                     key={row.name}

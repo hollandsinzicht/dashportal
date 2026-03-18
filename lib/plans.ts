@@ -32,7 +32,7 @@ export const PLANS: Plan[] = [
     description: "Perfect voor kleine teams die Power BI willen delen.",
     features: [
       "Onbeperkt werkruimtes & rapporten",
-      "Tot 10 gebruikers",
+      "1 – 10 gebruikers",
       "Eigen branding (logo + kleuren)",
       "E-mail authenticatie",
       "E-mail support",
@@ -52,7 +52,7 @@ export const PLANS: Plan[] = [
     description: "Voor groeiende organisaties met meer controle.",
     features: [
       "Onbeperkt werkruimtes & rapporten",
-      "Tot 50 gebruikers",
+      "11 – 30 gebruikers",
       "Eigen domein",
       "Microsoft SSO",
       "Row-Level Security",
@@ -61,7 +61,7 @@ export const PLANS: Plan[] = [
     ],
     limits: {
       workspaces: "Onbeperkt",
-      users: "50",
+      users: "30",
       reports: "Onbeperkt",
     },
     highlighted: true,
@@ -74,14 +74,14 @@ export const PLANS: Plan[] = [
     description: "Voor grote organisaties met complexe behoeften.",
     features: [
       "Onbeperkt werkruimtes & rapporten",
-      "Tot 200 gebruikers",
+      "31 – 150 gebruikers",
       "Alles van Business",
       "Geavanceerde analytics",
       "Priority support",
     ],
     limits: {
       workspaces: "Onbeperkt",
-      users: "200",
+      users: "150",
       reports: "Onbeperkt",
     },
     highlighted: false,
@@ -124,7 +124,7 @@ export interface ComparisonFeature {
 export const COMPARISON_FEATURES: ComparisonFeature[] = [
   { label: "Werkruimtes", starter: "Onbeperkt", business: "Onbeperkt", scale: "Onbeperkt", enterprise: "Onbeperkt" },
   { label: "Rapporten", starter: "Onbeperkt", business: "Onbeperkt", scale: "Onbeperkt", enterprise: "Onbeperkt" },
-  { label: "Gebruikers", starter: "10", business: "50", scale: "200", enterprise: "Onbeperkt" },
+  { label: "Gebruikers", starter: "1 – 10", business: "11 – 30", scale: "31 – 150", enterprise: "151+" },
   { label: "Eigen branding", starter: true, business: true, scale: true, enterprise: true },
   { label: "Eigen domein", starter: false, business: true, scale: true, enterprise: true },
   { label: "Microsoft SSO", starter: false, business: true, scale: true, enterprise: true },
