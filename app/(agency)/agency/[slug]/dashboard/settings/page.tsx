@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getAgencyBySlug, getAgencyPricingTiers, getAgencyDashboardStats } from "@/lib/agency/queries";
 import { formatEuro } from "@/lib/agency/pricing";
-import { Settings, Palette, Building2, CreditCard, Globe } from "lucide-react";
+import { Settings, CreditCard, Globe } from "lucide-react";
 import { DeactivateAgencyButton } from "@/components/agency/DeactivateAgencyButton";
+import { AgencySettingsForm } from "@/components/agency/AgencySettingsForm";
 
 export default async function AgencySettingsPage({
   params,
@@ -17,7 +18,6 @@ export default async function AgencySettingsPage({
     getAgencyPricingTiers(agency.id),
     getAgencyDashboardStats(agency.id),
   ]);
-  const details = agency.company_details || {};
 
   return (
     <div className="space-y-6">
@@ -26,77 +26,28 @@ export default async function AgencySettingsPage({
         <p className="text-muted mt-1">Beheer je agency profiel en configuratie</p>
       </div>
 
-      {/* Bedrijfsgegevens */}
-      <div className="bg-surface border border-border rounded-xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Building2 className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold text-foreground">Bedrijfsgegevens</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InfoField label="Bedrijfsnaam" value={agency.name} />
-          <InfoField label="Agency URL" value={`${agency.slug}.dashportal.app`} />
-          <InfoField label="Eigenaar e-mail" value={agency.owner_email} />
-          <InfoField label="Facturatie e-mail" value={agency.billing_email || agency.owner_email} />
-          <InfoField label="KvK-nummer" value={details.kvk_number} />
-          <InfoField label="BTW-nummer" value={details.vat_number} />
-          <InfoField label="Website" value={details.website} />
-        </div>
-      </div>
+      {/* Bewerkbaar formulier: bedrijfsgegevens + branding */}
+      <AgencySettingsForm
+        agencyId={agency.id}
+        initialData={{
+          name: agency.name,
+          billing_email: agency.billing_email,
+          primary_color: agency.primary_color,
+          accent_color: agency.accent_color,
+          logo_url: agency.logo_url,
+          company_details: agency.company_details || {},
+        }}
+      />
 
-      {/* Branding */}
-      <div className="bg-surface border border-border rounded-xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Palette className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold text-foreground">Branding</h2>
-        </div>
-        <div className="flex items-center gap-6">
-          <div>
-            <p className="text-xs text-muted mb-2">Logo</p>
-            {agency.logo_url ? (
-              <img
-                src={agency.logo_url}
-                alt="Agency logo"
-                className="h-12 w-auto rounded-lg object-contain"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-lg bg-muted/10 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-muted" />
-              </div>
-            )}
-          </div>
-          <div>
-            <p className="text-xs text-muted mb-2">Kleuren</p>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-8 h-8 rounded-lg border border-border"
-                  style={{ backgroundColor: agency.primary_color }}
-                />
-                <span className="text-xs text-muted">{agency.primary_color}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-8 h-8 rounded-lg border border-border"
-                  style={{ backgroundColor: agency.accent_color }}
-                />
-                <span className="text-xs text-muted">{agency.accent_color}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Agency URL */}
+      {/* Agency URL (read-only) */}
       <div className="bg-surface border border-border rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <Globe className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground">Agency URL</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <code className="px-3 py-1.5 rounded-lg bg-muted/10 text-sm font-mono text-foreground">
-            dashportal.app/agency/{agency.slug}
-          </code>
-        </div>
+        <code className="px-3 py-1.5 rounded-lg bg-muted/10 text-sm font-mono text-foreground">
+          dashportal.app/agency/{agency.slug}
+        </code>
         <p className="text-xs text-muted mt-2">
           Dit is de URL waarmee je en je team het dashboard bereiken.
         </p>
@@ -108,6 +59,9 @@ export default async function AgencySettingsPage({
           <CreditCard className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-foreground">Prijsschijven</h2>
         </div>
+        <p className="text-xs text-muted mb-3">
+          Je prijsschijven bepalen de maandelijkse kosten per klantportaal op basis van actieve gebruikers.
+        </p>
 
         {tiers.length === 0 ? (
           <p className="text-muted text-sm">Geen prijsschijven geconfigureerd.</p>
@@ -153,15 +107,6 @@ export default async function AgencySettingsPage({
           clientCount={stats.total_clients}
         />
       </div>
-    </div>
-  );
-}
-
-function InfoField({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div>
-      <p className="text-xs text-muted mb-0.5">{label}</p>
-      <p className="text-sm text-foreground">{value || "—"}</p>
     </div>
   );
 }
