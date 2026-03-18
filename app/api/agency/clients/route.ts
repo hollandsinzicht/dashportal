@@ -40,11 +40,11 @@ export async function GET(req: NextRequest) {
  * 2. Klant-admin tenant_user aanmaken
  * 3. Uitnodigingsmail versturen (non-blocking)
  *
- * Body: { agencyId, clientName, clientSlug, adminEmail, adminName? }
+ * Body: { agencyId, clientName, clientSlug, adminEmail, adminName?, adminPassword? }
  */
 export async function POST(req: NextRequest) {
   try {
-    const { agencyId, clientName, clientSlug, adminEmail, adminName } =
+    const { agencyId, clientName, clientSlug, adminEmail, adminName, adminPassword } =
       await req.json();
 
     // ─── Input validatie ───
@@ -85,14 +85,13 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── Auth user aanmaken voor klant-admin ───
-    // Gebruik een tijdelijk wachtwoord — klant kan via magic link / reset inloggen
-    const tempPassword = `dp-${crypto.randomUUID().slice(0, 16)}`;
+    const password = adminPassword || `dp-${crypto.randomUUID().slice(0, 16)}`;
     let authUserId: string | null = null;
 
     const { data: newUser, error: createError } =
       await ctx.serviceClient.auth.admin.createUser({
         email: normalizedEmail,
-        password: tempPassword,
+        password,
         email_confirm: true,
         user_metadata: { display_name: adminName || clientName },
       });
@@ -107,6 +106,13 @@ export async function POST(req: NextRequest) {
           (u) => u.email === normalizedEmail
         );
         authUserId = existingUser?.id || null;
+
+        // Als agency een wachtwoord heeft ingesteld, update het voor de bestaande user
+        if (authUserId && adminPassword) {
+          await ctx.serviceClient.auth.admin.updateUserById(authUserId, {
+            password: adminPassword,
+          });
+        }
       } else {
         console.error("[agency/clients/post] Auth create error:", createError);
         return NextResponse.json(

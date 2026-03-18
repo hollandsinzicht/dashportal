@@ -19,6 +19,7 @@ export default function NewClientPage() {
     clientSlug: "",
     adminEmail: "",
     adminName: "",
+    adminPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -39,6 +40,7 @@ export default function NewClientPage() {
     if (form.clientSlug.length < 3) newErrors.clientSlug = "Minimaal 3 karakters";
     if (!/^[a-z0-9-]+$/.test(form.clientSlug)) newErrors.clientSlug = "Alleen kleine letters, cijfers en streepjes";
     if (!form.adminEmail) newErrors.adminEmail = "Verplicht";
+    if (form.adminPassword && form.adminPassword.length < 6) newErrors.adminPassword = "Minimaal 6 karakters";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -58,6 +60,7 @@ export default function NewClientPage() {
           clientSlug: form.clientSlug,
           adminEmail: form.adminEmail,
           adminName: form.adminName || undefined,
+          adminPassword: form.adminPassword || undefined,
         }),
       });
 
@@ -147,6 +150,16 @@ export default function NewClientPage() {
           placeholder="Piet Pietersen (optioneel)"
           value={form.adminName}
           onChange={(e) => setForm({ ...form, adminName: e.target.value })}
+        />
+
+        <Input
+          label="Wachtwoord klant-beheerder"
+          type="password"
+          placeholder="Minimaal 6 karakters (optioneel)"
+          value={form.adminPassword}
+          onChange={(e) => setForm({ ...form, adminPassword: e.target.value })}
+          error={errors.adminPassword}
+          hint="Als je dit leeg laat wordt een tijdelijk wachtwoord gegenereerd"
         />
 
         <Button type="submit" variant="primary" className="w-full" loading={loading}>

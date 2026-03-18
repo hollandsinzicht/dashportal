@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getAgencyBySlug } from "@/lib/agency/queries";
 import { Building2, Users, FileText, ArrowLeft, ExternalLink } from "lucide-react";
+import { DeleteClientButton } from "@/components/agency/DeleteClientButton";
 
 export default async function ClientDetailPage({
   params,
@@ -121,6 +122,17 @@ export default async function ClientDetailPage({
             ))}
           </div>
         )}
+      </div>
+
+      {/* Danger zone */}
+      <div className="border border-border rounded-xl p-4">
+        <h2 className="font-semibold text-foreground mb-3">Gevarenzone</h2>
+        <DeleteClientButton
+          agencyId={agency.id}
+          agencySlug={slug}
+          clientId={id}
+          clientName={tenant.name}
+        />
       </div>
     </div>
   );

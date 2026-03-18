@@ -128,3 +128,68 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Interne fout" }, { status: 500 });
   }
 }
+
+/**
+ * DELETE /api/agency/clients/[id]
+ *
+ * Verwijder een klant-tenant van de agency.
+ * Deactiveert de tenant, verwijdert tenant_users en invoice lines.
+ * Body: { agencyId }
+ */
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    const { agencyId } = await req.json();
+
+    if (!agencyId) {
+      return NextResponse.json({ error: "agencyId is verplicht" }, { status: 400 });
+    }
+
+    const ctx = await getAgencyOwnerContext(agencyId);
+    if (isAuthError(ctx)) {
+      return NextResponse.json({ error: ctx.error }, { status: ctx.status });
+    }
+
+    // Verifieer dat tenant bij deze agency hoort
+    const { data: tenant } = await ctx.serviceClient
+      .from("tenants")
+      .select("id, name, slug")
+      .eq("id", id)
+      .eq("agency_id", agencyId)
+      .single();
+
+    if (!tenant) {
+      return NextResponse.json({ error: "Klant niet gevonden" }, { status: 404 });
+    }
+
+    // 1. Deactiveer alle tenant_users
+    await ctx.serviceClient
+      .from("tenant_users")
+      .update({ is_active: false })
+      .eq("tenant_id", id);
+
+    // 2. Verwijder invoice lines voor deze klant
+    await ctx.serviceClient
+      .from("agency_invoice_lines")
+      .delete()
+      .eq("agency_id", agencyId)
+      .eq("tenant_id", id);
+
+    // 3. Deactiveer de tenant en ontkoppel van agency
+    await ctx.serviceClient
+      .from("tenants")
+      .update({
+        is_active: false,
+        agency_id: null,
+        billing_owner: "self",
+      })
+      .eq("id", id);
+
+    console.log(`[agency/clients/id] Klant verwijderd: ${tenant.slug} (${id}) van agency ${agencyId}`);
+
+    return NextResponse.json({ success: true, message: `${tenant.name} is verwijderd` });
+  } catch (error) {
+    console.error("[agency/clients/id] DELETE fout:", error);
+    return NextResponse.json({ error: "Interne fout" }, { status: 500 });
+  }
+}
