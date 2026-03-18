@@ -14,6 +14,7 @@ import {
   Calendar,
   CreditCard,
   Plug,
+  Handshake,
 } from "lucide-react";
 import { getTenantDetail } from "@/lib/admin/queries";
 import { getPlanConfig } from "@/lib/stripe/config";
@@ -25,6 +26,8 @@ import {
   getUserLimitLabel,
   getStripeDashboardUrl,
 } from "@/lib/admin/helpers";
+import { AdminUserActions } from "@/components/admin/AdminUserActions";
+import { AdminTenantActions } from "@/components/admin/AdminTenantActions";
 
 export default async function TenantDetailPage({
   params,
@@ -41,8 +44,9 @@ export default async function TenantDetailPage({
   const statusBadge = getSubscriptionStatusBadge(
     tenant.subscription_status || "trialing"
   );
-  const admin = users.find((u) => u.role === "admin");
+  const adminUser = users.find((u) => u.role === "admin");
   const hasPbiConnection = !!(tenant.pbi_tenant_id && tenant.pbi_client_id);
+  const isAgencyManaged = !!(tenant as Record<string, unknown>).agency_id;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -63,8 +67,27 @@ export default async function TenantDetailPage({
           </h1>
           <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
           <Badge variant="accent">{planConfig.name}</Badge>
+          {isAgencyManaged && (
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] font-medium">
+              <Handshake className="w-3 h-3" />
+              Via agency
+            </span>
+          )}
+          {!tenant.is_active && (
+            <Badge variant="danger">Gearchiveerd</Badge>
+          )}
         </div>
         <p className="text-text-secondary text-sm font-mono">{tenant.slug}</p>
+      </div>
+
+      {/* Tenant acties */}
+      <div className="mb-6">
+        <AdminTenantActions
+          tenantId={tenant.id}
+          tenantName={tenant.name}
+          isActive={tenant.is_active}
+          subscriptionStatus={tenant.subscription_status || "active"}
+        />
       </div>
 
       {/* Info Cards */}
@@ -76,12 +99,12 @@ export default async function TenantDetailPage({
             <InfoRow
               icon={<User className="w-4 h-4" />}
               label="Admin"
-              value={admin?.name || "—"}
+              value={adminUser?.name || "—"}
             />
             <InfoRow
               icon={<Mail className="w-4 h-4" />}
               label="E-mail"
-              value={admin?.email || "—"}
+              value={adminUser?.email || "—"}
             />
             <InfoRow
               icon={<Building2 className="w-4 h-4" />}
@@ -101,9 +124,23 @@ export default async function TenantDetailPage({
           </dl>
         </Card>
 
-        {/* Card B: Abonnement */}
+        {/* Card B: Abonnement (leeg voor agency-managed) */}
         <Card>
-          <CardTitle className="mb-4">Abonnement</CardTitle>
+          <CardTitle className="mb-4">{isAgencyManaged ? "Agency" : "Abonnement"}</CardTitle>
+          {isAgencyManaged ? (
+            <div className="space-y-3 text-sm">
+              <div className="p-4 bg-[var(--color-accent)]/5 border border-[var(--color-accent)]/10 rounded-lg">
+                <p className="text-sm text-text-primary">
+                  Deze klant wordt beheerd en gefactureerd door een agency. Facturatie loopt niet via jouw Stripe.
+                </p>
+              </div>
+              <InfoRow
+                icon={<Handshake className="w-4 h-4" />}
+                label="Billing"
+                value="Via agency"
+              />
+            </div>
+          ) : (
           <dl className="space-y-3 text-sm">
             <InfoRow
               icon={<CreditCard className="w-4 h-4" />}
@@ -157,6 +194,7 @@ export default async function TenantDetailPage({
               </div>
             )}
           </dl>
+          )}
         </Card>
 
         {/* Card C: Gebruik */}
@@ -285,13 +323,16 @@ export default async function TenantDetailPage({
                   <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
                     Aangemaakt
                   </th>
+                  <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
+                    Acties
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {users.map((user) => (
                   <tr
                     key={user.id}
-                    className="hover:bg-surface-secondary/50 transition-colors"
+                    className={`hover:bg-surface-secondary/50 transition-colors ${!user.is_active ? "opacity-50" : ""}`}
                   >
                     <td className="px-4 py-3">
                       <span className="text-sm font-medium text-text-primary">
@@ -328,6 +369,15 @@ export default async function TenantDetailPage({
                       <span className="text-sm text-text-secondary">
                         {formatDate(user.created_at)}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <AdminUserActions
+                        userId={user.id}
+                        userName={user.name || user.email}
+                        email={user.email}
+                        isActive={user.is_active}
+                        role={user.role}
+                      />
                     </td>
                   </tr>
                 ))}
