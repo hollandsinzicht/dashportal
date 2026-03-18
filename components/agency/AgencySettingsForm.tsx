@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Building2, Palette, Check, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 
 interface AgencySettingsFormProps {
   agencyId: string;
@@ -112,24 +111,26 @@ export function AgencySettingsForm({ agencyId, initialData }: AgencySettingsForm
     setError("");
 
     try {
-      const supabase = createClient();
-      const ext = file.name.split(".").pop() || "png";
-      const path = `agency-logos/${agencyId}.${ext}`;
+      const formData = new FormData();
+      formData.append("agencyId", agencyId);
+      formData.append("file", file);
 
-      const { error: uploadError } = await supabase.storage
-        .from("logos")
-        .upload(path, file, { upsert: true });
+      const res = await fetch("/api/agency/logo", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (uploadError) {
-        setError("Upload mislukt: " + uploadError.message);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Upload mislukt");
         return;
       }
 
-      const { data: urlData } = supabase.storage
-        .from("logos")
-        .getPublicUrl(path);
-
-      setLogoUrl(urlData.publicUrl);
+      setLogoUrl(data.url);
+      setSuccess("Logo geupload");
+      router.refresh();
+      setTimeout(() => setSuccess(""), 3000);
     } catch {
       setError("Upload mislukt");
     } finally {
