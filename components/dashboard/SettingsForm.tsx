@@ -579,8 +579,8 @@ export function SettingsForm({ tenant, readOnly = false }: SettingsFormProps) {
           </div>
         </Card>
 
-        {/* Custom domain — Business+ */}
-        <FeatureGate
+        {/* Custom domain — Business+, niet voor agency-managed */}
+        {!tenant.agency_id && <FeatureGate
           feature="custom_domain"
           plan={tenant.subscription_plan || "starter"}
           subscriptionStatus={tenant.subscription_status || undefined}
@@ -613,7 +613,7 @@ export function SettingsForm({ tenant, readOnly = false }: SettingsFormProps) {
               </div>
             </div>
           </Card>
-        </FeatureGate>
+        </FeatureGate>}
 
         {/* Power BI koppeling */}
         <Card>

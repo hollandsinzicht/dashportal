@@ -21,6 +21,7 @@ const PLATFORM_ROUTES = [
   "/admin",
   "/onboarding",
   "/auth",
+  "/api",
 ];
 
 // Routes die bij marketing horen (dashportal.app), niet op platform
