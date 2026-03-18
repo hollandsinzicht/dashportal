@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Receipt,
   ExternalLink,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { getTenantsWithCounts, getPlatformStats } from "@/lib/admin/queries";
@@ -17,10 +18,64 @@ import {
   getPlanPrice,
   getStripeDashboardUrl,
 } from "@/lib/admin/helpers";
+import { getAllAgenciesWithCounts } from "@/lib/agency/queries";
+import { formatEuro } from "@/lib/agency/pricing";
+import { createServiceClient } from "@/lib/supabase/server";
+
+interface AdminInvoiceLine {
+  id: string;
+  agency_id: string;
+  tenant_id: string | null;
+  period_start: string;
+  period_end: string;
+  user_count: number;
+  tier_label: string | null;
+  amount: number;
+  created_at: string;
+  agency_name?: string;
+  tenant_name?: string;
+}
+
+async function getAgencyInvoiceLines(): Promise<AdminInvoiceLine[]> {
+  const supabase = await createServiceClient();
+  const { data: lines } = await supabase
+    .from("agency_invoice_lines")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (!lines || lines.length === 0) return [];
+
+  // Enrich met agency en tenant namen
+  const agencyIds = [...new Set(lines.map((l) => l.agency_id))];
+  const tenantIds = [...new Set(lines.filter((l) => l.tenant_id).map((l) => l.tenant_id!))];
+
+  const [agenciesRes, tenantsRes] = await Promise.all([
+    supabase.from("agencies").select("id, name").in("id", agencyIds),
+    tenantIds.length > 0
+      ? supabase.from("tenants").select("id, name").in("id", tenantIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const agencyMap = new Map((agenciesRes.data || []).map((a) => [a.id, a.name]));
+  const tenantMap = new Map((tenantsRes.data || []).map((t) => [t.id, t.name]));
+
+  return lines.map((line) => ({
+    ...line,
+    agency_name: agencyMap.get(line.agency_id) || "Onbekend",
+    tenant_name: line.tenant_id ? tenantMap.get(line.tenant_id) || "Verwijderd" : "—",
+  }));
+}
 
 export default async function BillingPage() {
-  const tenants = await getTenantsWithCounts();
+  const [tenants, agencies, invoiceLines] = await Promise.all([
+    getTenantsWithCounts(),
+    getAllAgenciesWithCounts(),
+    getAgencyInvoiceLines(),
+  ]);
   const stats = getPlatformStats(tenants);
+
+  const agencyMRR = agencies.reduce((sum, a) => sum + a.monthly_revenue, 0);
 
   const activeSubs = tenants.filter(
     (t) => t.subscription_status === "active"
@@ -194,6 +249,138 @@ export default async function BillingPage() {
                       ) : (
                         <span className="text-sm text-text-secondary">—</span>
                       )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ─── Agency Facturatie ─── */}
+      <div className="mt-12 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-[family-name:var(--font-syne)] text-xl font-bold text-text-primary">
+              Agency Facturatie
+            </h2>
+            <p className="text-text-secondary mt-1 text-sm">
+              Overzicht van alle agency factuurlijnen — gebruik dit om maandelijks te factureren.
+            </p>
+          </div>
+          <div className="bg-surface rounded-xl border border-border px-4 py-3 text-center">
+            <p className="text-xs text-text-secondary">Agency MRR</p>
+            <p className="text-xl font-bold text-success">{formatEuro(agencyMRR)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Agency samenvatting per agency */}
+      {agencies.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {agencies.map((agency) => (
+            <Link
+              key={agency.id}
+              href={`/admin/agencies/${agency.id}`}
+              className="bg-surface rounded-xl border border-border p-4 hover:border-primary/30 transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Building2 className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-text-primary">{agency.name}</p>
+                  <p className="text-xs text-text-secondary">{agency.client_count} klanten</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-secondary">{agency.total_users} gebruikers</span>
+                <span className="text-sm font-bold text-text-primary">{formatEuro(agency.monthly_revenue)}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Factuurlijnen tabel */}
+      {invoiceLines.length === 0 ? (
+        <div className="bg-surface rounded-xl border border-border text-center py-12">
+          <Receipt className="w-10 h-10 text-text-secondary/20 mx-auto mb-3" />
+          <p className="text-sm text-text-secondary">
+            Nog geen agency factuurlijnen. Trigger de billing cron om berekeningen uit te voeren.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-surface rounded-xl border border-border overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-surface-secondary">
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
+                  Agency
+                </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
+                  Klant
+                </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
+                  Tier
+                </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3 hidden md:table-cell">
+                  Gebruikers
+                </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
+                  Bedrag
+                </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
+                  Periode
+                </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
+                  Datum
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {invoiceLines.map((line) => {
+                const isProRata = line.tier_label?.includes("pro-rata");
+                return (
+                  <tr
+                    key={line.id}
+                    className={`hover:bg-surface-secondary/50 transition-colors ${isProRata ? "bg-warning/5" : ""}`}
+                  >
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-text-primary">
+                        {line.agency_name}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-text-primary">
+                        {line.tenant_name}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs ${isProRata ? "text-warning font-medium" : "text-text-secondary"}`}>
+                        {line.tier_label || "—"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <span className="text-sm text-text-primary">
+                        {line.user_count}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-text-primary">
+                        {formatEuro(line.amount)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      <span className="text-xs text-text-secondary">
+                        {formatDate(line.period_start)} – {formatDate(line.period_end)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      <span className="text-xs text-text-secondary">
+                        {formatDate(line.created_at)}
+                      </span>
                     </td>
                   </tr>
                 );

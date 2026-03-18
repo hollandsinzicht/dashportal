@@ -65,7 +65,7 @@ export default async function ClientDetailPage({
           </div>
         </div>
         <a
-          href={`/${tenant.slug}/login`}
+          href={`/${tenant.slug}`}
           target="_blank"
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm text-muted hover:text-foreground transition-colors"
         >

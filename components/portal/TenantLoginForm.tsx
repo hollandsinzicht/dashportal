@@ -80,7 +80,10 @@ export function TenantLoginForm({
       }
 
       // Succes → doorsturen naar portal
-      router.replace(`/${slug}/home`);
+      // Op subdomain (acme.dashportal.app): /home is voldoende
+      // Op localhost: /slug/home is nodig
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      router.replace(isLocal ? `/${slug}/home` : "/home");
     } catch {
       setError("Er ging iets mis. Probeer het later opnieuw.");
     } finally {
