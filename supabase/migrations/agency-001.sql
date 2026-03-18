@@ -184,9 +184,9 @@ CREATE POLICY "Users can read invoice lines in their agency" ON agency_invoice_l
 
 -- ─── 7. Updated_at trigger ───────────────────────────────────
 
--- Hergebruik bestaande set_updated_at() functie (al aanwezig in schema.sql)
+-- Hergebruik bestaande update_updated_at() functie (aanwezig in schema.sql)
 DROP TRIGGER IF EXISTS set_agencies_updated_at ON agencies;
 CREATE TRIGGER set_agencies_updated_at
   BEFORE UPDATE ON agencies
   FOR EACH ROW
-  EXECUTE FUNCTION set_updated_at();
+  EXECUTE FUNCTION update_updated_at();

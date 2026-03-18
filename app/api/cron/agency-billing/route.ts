@@ -55,18 +55,23 @@ export async function GET(req: NextRequest) {
 
     for (const billing of billingResults) {
       try {
-        // Skip agencies zonder Stripe Customer
+        // Agencies zonder Stripe Customer — sla invoice lines op maar skip Stripe
         if (!billing.stripeCustomerId) {
           console.warn(
-            `[cron/agency-billing] Agency ${billing.agencyId} (${billing.agencyName}) heeft geen Stripe customer. Overgeslagen.`
+            `[cron/agency-billing] Agency ${billing.agencyId} (${billing.agencyName}) heeft geen Stripe customer. Invoice lines opgeslagen zonder Stripe facturatie.`
+          );
+          await saveInvoiceLines(
+            billing.agencyId,
+            billing.clients,
+            billing.periodStart,
+            billing.periodEnd
           );
           results.push({
             agencyId: billing.agencyId,
             agencyName: billing.agencyName,
             clientCount: billing.clients.length,
             total: billing.total,
-            success: false,
-            error: "Geen Stripe customer ID",
+            success: true,
           });
           continue;
         }

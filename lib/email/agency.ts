@@ -88,7 +88,7 @@ export async function sendAgencyClientInviteEmail(
           <p><strong>${invite.agencyName}</strong> heeft een DashPortal portaal voor je aangemaakt: <strong>${invite.clientName}</strong>.</p>
           <p>Met DashPortal kun je je Power BI rapporten veilig delen met je team, in je eigen huisstijl.</p>
           <p>
-            <a href="${BASE_URL}/${invite.slug}/login"
+            <a href="${BASE_URL}/${invite.slug}"
                style="display: inline-block; background: #1E3A5F; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none;">
               Log in op je portaal
             </a>
