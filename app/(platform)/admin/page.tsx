@@ -4,6 +4,8 @@ import {
   Users,
   Euro,
   Clock,
+  CreditCard,
+  Handshake,
 } from "lucide-react";
 import Link from "next/link";
 import { getTenantsWithCounts, getPlatformStats } from "@/lib/admin/queries";
@@ -19,34 +21,38 @@ export default async function SuperAdminPage() {
   const tenants = await getTenantsWithCounts();
   const stats = getPlatformStats(tenants);
 
+  const directClients = tenants.filter((t) => !t.agency_id);
+  const agencyClients = tenants.filter((t) => !!t.agency_id);
+  const noStripe = tenants.filter((t) => !t.agency_id && !t.stripe_customer_id);
+
   const kpis = [
     {
-      label: "Tenants",
-      value: String(stats.totalTenants),
+      label: "Directe klanten",
+      value: String(directClients.length),
       icon: Building2,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
-      label: "Totaal gebruikers",
-      value: String(stats.totalUsers),
-      icon: Users,
+      label: "Via agencies",
+      value: String(agencyClients.length),
+      icon: Handshake,
       color: "text-[var(--color-accent)]",
       bg: "bg-[var(--color-accent)]/10",
     },
     {
-      label: "MRR",
+      label: "MRR (direct)",
       value: formatCurrency(stats.mrr),
       icon: Euro,
       color: "text-success",
       bg: "bg-success/10",
     },
     {
-      label: "Trials binnenkort",
-      value: String(stats.trialsExpiringSoon),
-      icon: Clock,
-      color: stats.trialsExpiringSoon > 0 ? "text-warning" : "text-text-secondary",
-      bg: stats.trialsExpiringSoon > 0 ? "bg-warning/10" : "bg-surface-secondary",
+      label: "Zonder Stripe",
+      value: String(noStripe.length),
+      icon: CreditCard,
+      color: noStripe.length > 0 ? "text-danger" : "text-text-secondary",
+      bg: noStripe.length > 0 ? "bg-danger/10" : "bg-surface-secondary",
     },
   ];
 
@@ -82,6 +88,16 @@ export default async function SuperAdminPage() {
         ))}
       </div>
 
+      {/* Trials binnenkort */}
+      {stats.trialsExpiringSoon > 0 && (
+        <div className="bg-warning/5 border border-warning/20 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
+          <Clock className="w-4 h-4 text-warning shrink-0" />
+          <p className="text-sm text-text-primary">
+            <strong>{stats.trialsExpiringSoon}</strong> trial(s) verlopen binnen 7 dagen
+          </p>
+        </div>
+      )}
+
       {/* Tenant tabel */}
       {tenants.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border text-center py-16">
@@ -101,6 +117,9 @@ export default async function SuperAdminPage() {
                 <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
                   Bedrijf
                 </th>
+                <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3">
+                  Type
+                </th>
                 <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3 hidden md:table-cell">
                   Contact
                 </th>
@@ -114,7 +133,7 @@ export default async function SuperAdminPage() {
                   Gebruikers
                 </th>
                 <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
-                  Aangemaakt
+                  Stripe
                 </th>
               </tr>
             </thead>
@@ -132,26 +151,30 @@ export default async function SuperAdminPage() {
                     className="hover:bg-surface-secondary/50 transition-colors"
                   >
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/tenants/${tenant.id}`}
-                          className="text-sm font-medium text-primary hover:underline"
-                        >
-                          {tenant.name}
-                        </Link>
-                        {tenant.agency_name && (
-                          <Link
-                            href={`/admin/agencies/${tenant.agency_id}`}
-                            className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] font-medium hover:bg-[var(--color-accent)]/20 transition-colors"
-                            title={`Agency: ${tenant.agency_name}`}
-                          >
-                            {tenant.agency_name}
-                          </Link>
-                        )}
-                      </div>
+                      <Link
+                        href={`/admin/tenants/${tenant.id}`}
+                        className="text-sm font-medium text-primary hover:underline"
+                      >
+                        {tenant.name}
+                      </Link>
                       <p className="text-xs text-text-secondary font-mono">
                         {tenant.slug}
                       </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {tenant.agency_name ? (
+                        <Link
+                          href={`/admin/agencies/${tenant.agency_id}`}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] font-medium hover:bg-[var(--color-accent)]/20 transition-colors"
+                        >
+                          <Handshake className="w-3 h-3" />
+                          {tenant.agency_name}
+                        </Link>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                          Direct
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       {tenant.admin_name && (
@@ -180,9 +203,13 @@ export default async function SuperAdminPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      <span className="text-sm text-text-secondary">
-                        {formatDate(tenant.created_at)}
-                      </span>
+                      {tenant.agency_id ? (
+                        <span className="text-xs text-text-secondary">via agency</span>
+                      ) : tenant.stripe_customer_id ? (
+                        <span className="text-xs text-success font-medium">Actief</span>
+                      ) : (
+                        <span className="text-xs text-danger font-medium">Ontbreekt</span>
+                      )}
                     </td>
                   </tr>
                 );
