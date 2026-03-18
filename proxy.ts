@@ -88,6 +88,13 @@ export async function proxy(request: NextRequest) {
     return updateSession(request);
   }
 
+  // ─── Tenant subdomain: platform routes doorlaten ───
+  // acme.dashportal.app/dashboard → NIET rewriten, doorsturen naar /dashboard
+  // zodat tenant-admins hun beheer dashboard kunnen gebruiken
+  if (PLATFORM_ROUTES.some((r) => pathname.startsWith(r))) {
+    return updateSession(request);
+  }
+
   // ─── Tenant subdomain: [slug].dashportal.app → rewrite ───
   // lyreco.dashportal.app/home → intern rewrite naar /lyreco/home
   const rewritePath = `/${subdomain}${pathname === "/" ? "" : pathname}`;

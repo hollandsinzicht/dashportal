@@ -20,9 +20,11 @@ interface PortalHeaderProps {
   demo?: boolean;
   /** Optioneel badge naast tenant naam (bijv. "DEMO") */
   badge?: string;
+  /** Agency-managed tenant: verbergt "Beheer" knop */
+  agencyManaged?: boolean;
 }
 
-export function PortalHeader({ tenant, user, demo, badge }: PortalHeaderProps) {
+export function PortalHeader({ tenant, user, demo, badge, agencyManaged }: PortalHeaderProps) {
   const router = useRouter();
 
   async function handleLogout() {

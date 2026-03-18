@@ -77,6 +77,7 @@ export default async function TenantHomePage({
           email: user.email!,
           role: tenantUser.role,
         }}
+        agencyManaged={!!tenant.agency_id}
       />
 
       {/* Content */}
