@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import { calculateTierPrice } from "./pricing";
 import type {
   Agency,
   AgencyUser,
@@ -83,6 +84,13 @@ export async function getAgencyClients(
 
   if (error || !tenants) return [];
 
+  // Haal pricing tiers op voor real-time berekening
+  const { data: tiers } = await supabase
+    .from("agency_pricing_tiers")
+    .select("min_users, max_users, price_per_month, label")
+    .eq("agency_id", agencyId)
+    .order("sort_order", { ascending: true });
+
   // Tel users en reports per tenant
   const clients: AgencyClient[] = await Promise.all(
     tenants.map(async (tenant) => {
@@ -101,15 +109,15 @@ export async function getAgencyClients(
           .then(({ count }) => count ?? 0),
       ]);
 
-      // Maandelijkse kosten ophalen uit meest recente invoice line
-      const { data: lastInvoice } = await supabase
-        .from("agency_invoice_lines")
-        .select("amount, tier_label")
-        .eq("agency_id", agencyId)
-        .eq("tenant_id", tenant.id)
-        .order("period_end", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Real-time tier berekening op basis van actieve users
+      let monthlyCost = 0;
+      let tierLabel: string | null = null;
+
+      if (tiers && tiers.length > 0) {
+        const tierResult = calculateTierPrice(userCount, tiers);
+        monthlyCost = tierResult.price;
+        tierLabel = tierResult.label;
+      }
 
       return {
         id: tenant.id,
@@ -120,8 +128,8 @@ export async function getAgencyClients(
         subscription_plan: tenant.subscription_plan,
         user_count: userCount,
         report_count: reportCount,
-        monthly_cost: lastInvoice?.amount ?? 0,
-        tier_label: lastInvoice?.tier_label ?? null,
+        monthly_cost: monthlyCost,
+        tier_label: tierLabel,
         created_at: tenant.created_at,
       } satisfies AgencyClient;
     })
@@ -165,20 +173,26 @@ export async function getAgencyDashboardStats(
     totalUsers = count ?? 0;
   }
 
-  // Maandelijks omzet: som van meest recente invoice lines
+  // Maandelijks omzet: real-time berekend op basis van users + tiers
   let monthlyRevenue = 0;
   if (tenantIds.length > 0) {
-    const { data: invoiceLines } = await supabase
-      .from("agency_invoice_lines")
-      .select("amount")
+    const { data: tiers } = await supabase
+      .from("agency_pricing_tiers")
+      .select("min_users, max_users, price_per_month, label")
       .eq("agency_id", agencyId)
-      .gte("period_end", new Date(Date.now() - 60 * 86400000).toISOString());
+      .order("sort_order", { ascending: true });
 
-    if (invoiceLines) {
-      monthlyRevenue = invoiceLines.reduce(
-        (sum, line) => sum + Number(line.amount),
-        0
-      );
+    if (tiers && tiers.length > 0) {
+      // Tel users per tenant en bereken tier
+      for (const tenantId of tenantIds) {
+        const { count } = await supabase
+          .from("tenant_users")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", tenantId)
+          .eq("is_active", true);
+        const tierResult = calculateTierPrice(count ?? 0, tiers);
+        monthlyRevenue += tierResult.price;
+      }
     }
   }
 
@@ -239,34 +253,40 @@ export async function getAllAgenciesWithCounts(): Promise<AgencyWithCounts[]> {
 
   const result: AgencyWithCounts[] = await Promise.all(
     agencies.map(async (agency) => {
-      const [clientCount, totalUsers, monthlyRevenue] = await Promise.all([
-        supabase
-          .from("tenants")
-          .select("id", { count: "exact", head: true })
-          .eq("agency_id", agency.id)
-          .then(({ count }) => count ?? 0),
-        supabase
+      // Haal tenants + tiers op
+      const [tenantsRes, tiersRes] = await Promise.all([
+        supabase.from("tenants").select("id").eq("agency_id", agency.id),
+        supabase.from("agency_pricing_tiers").select("min_users, max_users, price_per_month, label").eq("agency_id", agency.id).order("sort_order", { ascending: true }),
+      ]);
+
+      const tenantIds = (tenantsRes.data || []).map((t) => t.id);
+      const tiers = tiersRes.data || [];
+      const clientCount = tenantIds.length;
+
+      // Tel users
+      let totalUsers = 0;
+      if (tenantIds.length > 0) {
+        const { count } = await supabase
           .from("tenant_users")
           .select("id", { count: "exact", head: true })
-          .in(
-            "tenant_id",
-            await supabase
-              .from("tenants")
-              .select("id")
-              .eq("agency_id", agency.id)
-              .then(({ data }) => (data || []).map((t) => t.id))
-          )
-          .eq("is_active", true)
-          .then(({ count }) => count ?? 0),
-        supabase
-          .from("agency_invoice_lines")
-          .select("amount")
-          .eq("agency_id", agency.id)
-          .gte("period_end", new Date(Date.now() - 60 * 86400000).toISOString())
-          .then(({ data }) =>
-            (data || []).reduce((sum, l) => sum + Number(l.amount), 0)
-          ),
-      ]);
+          .in("tenant_id", tenantIds)
+          .eq("is_active", true);
+        totalUsers = count ?? 0;
+      }
+
+      // Real-time MRR berekening
+      let monthlyRevenue = 0;
+      if (tiers.length > 0 && tenantIds.length > 0) {
+        for (const tid of tenantIds) {
+          const { count } = await supabase
+            .from("tenant_users")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tid)
+            .eq("is_active", true);
+          const tierResult = calculateTierPrice(count ?? 0, tiers);
+          monthlyRevenue += tierResult.price;
+        }
+      }
 
       return {
         id: agency.id,
