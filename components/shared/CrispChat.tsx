@@ -85,6 +85,9 @@ function getSupportTier(
 export function CrispChat() {
   const tenant = useTenantOptional();
 
+  // Agency-managed tenants: geen Crisp chat (support via agency)
+  if (tenant?.agencyId) return null;
+
   // Bepaal support tier
   const tier = tenant
     ? getSupportTier(

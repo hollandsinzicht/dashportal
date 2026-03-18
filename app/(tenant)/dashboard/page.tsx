@@ -78,7 +78,7 @@ export default async function DashboardOverview() {
       serviceClient
         .from("tenants")
         .select(
-          "pbi_client_id, pbi_tenant_id, logo_url, primary_color, custom_domain, subscription_plan"
+          "pbi_client_id, pbi_tenant_id, logo_url, primary_color, custom_domain, subscription_plan, agency_id"
         )
         .eq("id", tenantId)
         .single(),
@@ -314,10 +314,12 @@ export default async function DashboardOverview() {
         </Card>
       </div>
 
-      {/* Dashboard bouwen CTA */}
-      <div className="mt-8">
-        <DashboardBouwenCTA variant="inline" />
-      </div>
+      {/* Dashboard bouwen CTA — niet tonen voor agency-managed klanten */}
+      {!tenantData?.agency_id && (
+        <div className="mt-8">
+          <DashboardBouwenCTA variant="inline" />
+        </div>
+      )}
     </div>
   );
 }

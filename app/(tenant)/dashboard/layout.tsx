@@ -138,6 +138,7 @@ export default async function DashboardLayout({
             slug: tenant.slug,
             logoUrl: tenant.logo_url,
           }}
+          agencyManaged={!!tenant.agency_id}
         />
 
         {/* Main content area */}

@@ -19,6 +19,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  hideForAgency?: boolean;
 }
 
 const adminNav: NavItem[] = [
@@ -28,8 +29,8 @@ const adminNav: NavItem[] = [
   { label: "Toegang", href: "/dashboard/access", icon: ShieldCheck },
   { label: "Meta", href: "/dashboard/meta", icon: Activity },
   { label: "Activiteit", href: "/dashboard/activity", icon: ClipboardList },
-  { label: "Facturatie", href: "/dashboard/billing", icon: CreditCard },
-  { label: "Partner", href: "/dashboard/affiliate", icon: Handshake },
+  { label: "Facturatie", href: "/dashboard/billing", icon: CreditCard, hideForAgency: true },
+  { label: "Partner", href: "/dashboard/affiliate", icon: Handshake, hideForAgency: true },
   { label: "Instellingen", href: "/dashboard/settings", icon: Settings },
 ];
 
@@ -40,13 +41,17 @@ interface DashboardSidebarProps {
     slug: string;
     logoUrl: string | null;
   };
+  agencyManaged?: boolean;
 }
 
-export function DashboardSidebar({ role, tenant }: DashboardSidebarProps) {
+export function DashboardSidebar({ role, tenant, agencyManaged }: DashboardSidebarProps) {
   const pathname = usePathname();
 
   // Alleen admins zien de dashboard sidebar
-  const navItems = role === "admin" ? adminNav : [];
+  // Filter agency-specifieke items weg voor agency-managed tenants
+  const navItems = role === "admin"
+    ? adminNav.filter((item) => !(agencyManaged && item.hideForAgency))
+    : [];
 
   return (
     <aside className="hidden lg:flex w-64 flex-col bg-surface border-r border-border">

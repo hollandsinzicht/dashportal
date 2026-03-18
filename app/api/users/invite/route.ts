@@ -153,7 +153,12 @@ export async function POST(req: NextRequest) {
 
     // ─── Supabase Auth: genereer invite link + stuur e-mail via Resend ───
     let emailSent = false;
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/[^/]*$/, "") || "http://localhost:3000";
+    // Gebruik altijd het platform domein voor redirects (niet tenant subdomains)
+    // zodat Supabase de redirect URL herkent in de whitelist
+    const rawOrigin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/[^/]*$/, "") || "http://localhost:3000";
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3001";
+    const isLocal = rawOrigin.includes("localhost") || rawOrigin.includes("127.0.0.1");
+    const origin = isLocal ? rawOrigin : `https://app.${rootDomain}`;
     const inviterName = currentUser.name || user.user_metadata?.display_name || user.email || "een beheerder";
 
     try {

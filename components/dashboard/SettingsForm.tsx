@@ -53,6 +53,7 @@ interface SettingsFormProps {
     pbi_tenant_id?: string | null;
     pbi_client_id?: string | null;
     pbi_workspace_ids?: string[] | null;
+    agency_id?: string | null;
   };
   readOnly?: boolean;
 }
@@ -291,6 +292,15 @@ export function SettingsForm({ tenant, readOnly = false }: SettingsFormProps) {
         body: JSON.stringify(body),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setPbiTestResult({
+          success: false,
+          message: errorData.error || `Verbinding mislukt (HTTP ${res.status})`,
+        });
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {
@@ -305,10 +315,10 @@ export function SettingsForm({ tenant, readOnly = false }: SettingsFormProps) {
           message: data.error || "Verbinding mislukt",
         });
       }
-    } catch {
+    } catch (err) {
       setPbiTestResult({
         success: false,
-        message: "Er ging iets mis. Controleer je gegevens.",
+        message: err instanceof Error ? err.message : "Er ging iets mis. Controleer je gegevens.",
       });
     } finally {
       setPbiTesting(false);
@@ -791,35 +801,51 @@ export function SettingsForm({ tenant, readOnly = false }: SettingsFormProps) {
           </div>
         </Card>
 
-        {/* Support info card */}
-        <SupportInfoCard
-          plan={tenant.subscription_plan || "starter"}
-          subscriptionStatus={tenant.subscription_status || "active"}
-          trialEndsAt={tenant.trial_ends_at || null}
-        />
-
-        {/* Subscription info */}
-        <Card>
-          <CardTitle>Abonnement</CardTitle>
-          <CardDescription>
-            Je huidige plan en portaal informatie.
-          </CardDescription>
-
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="p-4 bg-surface-secondary rounded-lg text-center">
-              <p className="text-2xl font-bold text-primary capitalize">
-                {tenant.subscription_plan || "Starter"}
+        {/* Support info card — voor agency clients: agency support info */}
+        {tenant.agency_id ? (
+          <Card>
+            <CardTitle>Support</CardTitle>
+            <CardDescription>
+              Voor ondersteuning kun je contact opnemen met je agency.
+            </CardDescription>
+            <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+              <p className="text-sm text-text-primary">
+                Je portaal wordt beheerd door je agency. Neem contact op met je agency beheerder voor vragen over je account, gebruikers of rapporten.
               </p>
-              <p className="text-xs text-text-secondary mt-1">Huidig plan</p>
             </div>
-            <div className="p-4 bg-surface-secondary rounded-lg text-center">
-              <p className="text-sm font-mono text-text-primary">
-                {tenant.slug}.dashportal.app
-              </p>
-              <p className="text-xs text-text-secondary mt-1">Portaal URL</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        ) : (
+          <>
+            <SupportInfoCard
+              plan={tenant.subscription_plan || "starter"}
+              subscriptionStatus={tenant.subscription_status || "active"}
+              trialEndsAt={tenant.trial_ends_at || null}
+            />
+
+            {/* Subscription info — niet voor agency-managed */}
+            <Card>
+              <CardTitle>Abonnement</CardTitle>
+              <CardDescription>
+                Je huidige plan en portaal informatie.
+              </CardDescription>
+
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="p-4 bg-surface-secondary rounded-lg text-center">
+                  <p className="text-2xl font-bold text-primary capitalize">
+                    {tenant.subscription_plan || "Starter"}
+                  </p>
+                  <p className="text-xs text-text-secondary mt-1">Huidig plan</p>
+                </div>
+                <div className="p-4 bg-surface-secondary rounded-lg text-center">
+                  <p className="text-sm font-mono text-text-primary">
+                    {tenant.slug}.dashportal.app
+                  </p>
+                  <p className="text-xs text-text-secondary mt-1">Portaal URL</p>
+                </div>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );

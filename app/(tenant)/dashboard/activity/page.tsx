@@ -28,13 +28,14 @@ export default async function ActivityLogPage() {
   // ─── Tenant plan ophalen voor feature gating ───
   const { data: tenant } = await serviceClient
     .from("tenants")
-    .select("subscription_plan, subscription_status, trial_ends_at")
+    .select("subscription_plan, subscription_status, trial_ends_at, agency_id")
     .eq("id", tenantId)
     .single();
 
   const plan = tenant?.subscription_plan || "starter";
   const subscriptionStatus = tenant?.subscription_status || "active";
   const trialEndsAt = tenant?.trial_ends_at || null;
+  const isAgencyManaged = !!tenant?.agency_id;
 
   return (
     <div className="space-y-6">
@@ -51,15 +52,19 @@ export default async function ActivityLogPage() {
         </p>
       </div>
 
-      {/* Feature Gate: advanced_analytics (Scale+) */}
-      <FeatureGate
-        feature="advanced_analytics"
-        plan={plan}
-        subscriptionStatus={subscriptionStatus}
-        trialEndsAt={trialEndsAt}
-      >
+      {/* Agency-managed: altijd toegang. Overige: Feature Gate (Scale+) */}
+      {isAgencyManaged ? (
         <ActivityLog tenantId={tenantId} />
-      </FeatureGate>
+      ) : (
+        <FeatureGate
+          feature="advanced_analytics"
+          plan={plan}
+          subscriptionStatus={subscriptionStatus}
+          trialEndsAt={trialEndsAt}
+        >
+          <ActivityLog tenantId={tenantId} />
+        </FeatureGate>
+      )}
     </div>
   );
 }
