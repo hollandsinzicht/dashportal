@@ -56,20 +56,21 @@ export function AgencySettingsForm({ agencyId, initialData }: AgencySettingsForm
       const res = await fetch("/api/agency", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ agencyId, ...fields }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Opslaan mislukt");
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || `Opslaan mislukt (HTTP ${res.status})`);
         return;
       }
 
       setSuccess(`${label} opgeslagen`);
       router.refresh();
       setTimeout(() => setSuccess(""), 3000);
-    } catch {
-      setError("Er ging iets mis");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Er ging iets mis");
     } finally {
       setSaving(false);
     }
@@ -117,6 +118,7 @@ export function AgencySettingsForm({ agencyId, initialData }: AgencySettingsForm
 
       const res = await fetch("/api/agency/logo", {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
 
