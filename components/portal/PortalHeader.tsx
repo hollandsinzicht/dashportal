@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BarChart3, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 
 interface PortalHeaderProps {
@@ -46,9 +46,7 @@ export function PortalHeader({ tenant, user, demo, badge, agencyManaged }: Porta
                 className="h-8 w-auto object-contain"
               />
             ) : (
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-white" />
-              </div>
+              <img src="/favicon-dashportal.png" alt="DashPortal" className="w-8 h-8" />
             )}
             <span className="font-[family-name:var(--font-syne)] font-bold text-text-primary">
               {tenant.name}

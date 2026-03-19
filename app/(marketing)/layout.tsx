@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
-  BarChart3,
   ArrowRight,
 } from "lucide-react";
 
@@ -15,13 +15,9 @@ export default function MarketingLayout({
       <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-[family-name:var(--font-syne)] font-bold text-lg text-text-primary">
-                DashPortal
-              </span>
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/favicon-dashportal.png" alt="DashPortal" width={32} height={32} />
+              <Image src="/logo-dashportal.png" alt="DashPortal" width={140} height={32} style={{ height: 28, width: "auto" }} />
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
@@ -76,13 +72,9 @@ export default function MarketingLayout({
       <footer className="border-t border-border bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-[family-name:var(--font-syne)] font-bold text-text-primary">
-                DashPortal
-              </span>
+            <div className="flex items-center gap-2">
+              <Image src="/favicon-dashportal.png" alt="DashPortal" width={28} height={28} />
+              <Image src="/logo-dashportal.png" alt="DashPortal" width={120} height={28} style={{ height: 24, width: "auto" }} />
               <span className="text-xs text-text-secondary">
                 by Power BI Studio
               </span>

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
-import { BarChart3 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 /**
@@ -24,13 +24,9 @@ export default async function AdminLayout({
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-8">
         <div className="max-w-sm w-full">
-          <div className="flex items-center justify-center gap-2.5 mb-8">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-[family-name:var(--font-syne)] font-bold text-lg text-text-primary">
-              DashPortal
-            </span>
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <Image src="/favicon-dashportal.png" alt="DashPortal" width={32} height={32} />
+            <Image src="/logo-dashportal.png" alt="DashPortal" width={140} height={32} style={{ height: 28, width: "auto" }} />
           </div>
           <div className="bg-surface border border-border rounded-2xl p-8">
             <h1 className="font-[family-name:var(--font-syne)] text-xl font-bold text-text-primary mb-1 text-center">
@@ -75,9 +71,7 @@ export default async function AdminLayout({
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
               <Link href="/admin" className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-white" />
-                </div>
+                <Image src="/favicon-dashportal.png" alt="DashPortal" width={28} height={28} />
                 <span className="font-[family-name:var(--font-syne)] font-bold text-text-primary">
                   Admin
                 </span>

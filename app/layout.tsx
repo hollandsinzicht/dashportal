@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   title: "DashPortal — Jouw eigen dataportaal",
   description:
     "Bied Power BI rapporten aan via een branded, gebruiksvriendelijk portaal. White-label dataportaal voor jouw organisatie.",
+  icons: {
+    icon: "/favicon-dashportal.png",
+    apple: "/favicon-dashportal.png",
+  },
 };
 
 export default function RootLayout({

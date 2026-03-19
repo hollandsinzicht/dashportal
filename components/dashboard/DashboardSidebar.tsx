@@ -8,7 +8,6 @@ import {
   Users,
   ShieldCheck,
   Settings,
-  BarChart3,
   Activity,
   CreditCard,
   ClipboardList,
@@ -64,9 +63,7 @@ export function DashboardSidebar({ role, tenant, agencyManaged }: DashboardSideb
             className="h-8 w-auto object-contain"
           />
         ) : (
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-            <BarChart3 className="w-5 h-5 text-white" />
-          </div>
+          <img src="/favicon-dashportal.png" alt="DashPortal" className="w-8 h-8 shrink-0" />
         )}
         <span className="font-[family-name:var(--font-syne)] font-bold text-text-primary truncate">
           {tenant.name}

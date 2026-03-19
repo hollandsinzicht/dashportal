@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ResendInviteButton } from "@/components/portal/ResendInviteButton";
-import { BarChart3, AlertTriangle, Mail, CheckCircle } from "lucide-react";
+import { AlertTriangle, Mail, CheckCircle } from "lucide-react";
+import Image from "next/image";
 
 const ERROR_MESSAGES: Record<string, string> = {
   otp_expired: "Je login-link is verlopen.",
@@ -171,9 +172,7 @@ export function TenantLoginForm({
             {logoUrl ? (
               <img src={logoUrl} alt={tenantName} className="h-12 mx-auto" />
             ) : (
-              <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mx-auto">
-                <BarChart3 className="w-8 h-8 text-white" />
-              </div>
+              <Image src="/favicon-dashportal.png" alt="DashPortal" width={56} height={56} className="mx-auto" />
             )}
           </div>
 
@@ -213,9 +212,7 @@ export function TenantLoginForm({
               className="h-12 mx-auto mb-4"
             />
           ) : (
-            <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-8 h-8 text-white" />
-            </div>
+            <Image src="/favicon-dashportal.png" alt="DashPortal" width={56} height={56} className="mx-auto mb-4" />
           )}
           <h1 className="font-[family-name:var(--font-syne)] text-xl font-bold text-text-primary">
             {tenantName}

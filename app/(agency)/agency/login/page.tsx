@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { AgencyLoginForm } from "@/components/agency/AgencyLoginForm";
-import { BarChart3 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
@@ -51,13 +51,9 @@ export default async function AgencyLoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
       <div className="max-w-sm w-full">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-[family-name:var(--font-syne)] font-bold text-lg text-text-primary">
-            DashPortal
-          </span>
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <Image src="/favicon-dashportal.png" alt="DashPortal" width={32} height={32} />
+          <Image src="/logo-dashportal.png" alt="DashPortal" width={140} height={32} style={{ height: 28, width: "auto" }} />
         </div>
 
         {/* Login card */}
