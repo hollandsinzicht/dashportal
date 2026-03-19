@@ -21,6 +21,7 @@ export default function AgencyRegisterStep1() {
     vatNumber: "",
     website: "",
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function generateSlug(name: string) {
@@ -51,6 +52,7 @@ export default function AgencyRegisterStep1() {
     if (!form.email) newErrors.email = "Verplicht";
     if (!form.password) newErrors.password = "Verplicht";
     if (form.password && form.password.length < 6) newErrors.password = "Minimaal 6 karakters";
+    if (!acceptedTerms) newErrors.terms = "Je moet akkoord gaan met de voorwaarden";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -225,6 +227,32 @@ export default function AgencyRegisterStep1() {
             onChange={(e) => setForm({ ...form, billingEmail: e.target.value })}
             hint="Leeg laten om je account e-mail te gebruiken"
           />
+
+          {/* Akkoord voorwaarden */}
+          <div className="space-y-1.5">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => { setAcceptedTerms(e.target.checked); setErrors((prev) => { const { terms, ...rest } = prev; return rest; }); }}
+                className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-muted">
+                Ik ga akkoord met de{" "}
+                <a href="/terms" target="_blank" className="text-primary hover:underline">
+                  algemene voorwaarden
+                </a>
+                {" "}en het{" "}
+                <a href="/privacy" target="_blank" className="text-primary hover:underline">
+                  privacybeleid
+                </a>
+                .
+              </span>
+            </label>
+            {errors.terms && (
+              <p className="text-sm text-danger">{errors.terms}</p>
+            )}
+          </div>
 
           <Button type="submit" variant="primary" className="w-full" loading={loading}>
             Account aanmaken & doorgaan

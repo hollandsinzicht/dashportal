@@ -18,6 +18,7 @@ export default function OnboardingStep1() {
     email: "",
     password: "",
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function generateSlug(name: string) {
@@ -56,6 +57,7 @@ export default function OnboardingStep1() {
     if (!form.password) newErrors.password = "Verplicht";
     if (form.password && form.password.length < 6)
       newErrors.password = "Minimaal 6 karakters";
+    if (!acceptedTerms) newErrors.terms = "Je moet akkoord gaan met de voorwaarden";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -227,6 +229,32 @@ export default function OnboardingStep1() {
               error={errors.password}
               hint="Hiermee log je later in op je portaal"
             />
+
+            {/* Akkoord voorwaarden */}
+            <div className="space-y-1.5">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => { setAcceptedTerms(e.target.checked); setErrors((prev) => { const { terms, ...rest } = prev; return rest; }); }}
+                  className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-text-secondary">
+                  Ik ga akkoord met de{" "}
+                  <a href="/terms" target="_blank" className="text-primary hover:underline">
+                    algemene voorwaarden
+                  </a>
+                  {" "}en het{" "}
+                  <a href="/privacy" target="_blank" className="text-primary hover:underline">
+                    privacybeleid
+                  </a>
+                  .
+                </span>
+              </label>
+              {errors.terms && (
+                <p className="text-sm text-danger">{errors.terms}</p>
+              )}
+            </div>
 
             <Button
               type="submit"

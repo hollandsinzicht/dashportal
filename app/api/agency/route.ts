@@ -5,6 +5,19 @@ import { DEFAULT_AGENCY_TIERS } from "@/lib/agency/pricing";
 import { isAuthError } from "@/lib/auth/validate";
 import { getAgencyOwnerContext } from "@/lib/auth/agency";
 
+/** CORS preflight handler */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Credentials": "true",
+    },
+  });
+}
+
 /**
  * POST /api/agency
  *
