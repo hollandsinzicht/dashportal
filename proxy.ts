@@ -7,21 +7,24 @@ import { updateSession } from "@/lib/supabase/middleware";
  * Routing logica:
  *   localhost:3001          → alles normaal (geen subdomain check)
  *   www.dashportal.app      → redirect naar dashportal.app
- *   dashportal.app          → marketing routes
+ *   dashportal.app          → marketing routes + agency routes + API
  *   app.dashportal.app      → platform routes (onboarding, dashboard, admin)
  *   [slug].dashportal.app   → rewrite naar /[tenant-slug]/* routes
  *   custom-domain.com       → rewrite naar /_custom-domain/* (met header)
+ *
+ * BELANGRIJK: /api routes worden NOOIT geredirect — altijd op hetzelfde origin
+ * verwerkt om CORS problemen te voorkomen.
  */
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "localhost:3001";
 
 // Routes die op het platform horen (app.dashportal.app), niet op marketing
+// LET OP: /api staat hier NIET in — API routes worden nooit geredirect
 const PLATFORM_ROUTES = [
   "/dashboard",
   "/admin",
   "/onboarding",
   "/auth",
-  "/api",
 ];
 
 // Routes die bij marketing horen (dashportal.app), niet op platform
@@ -30,6 +33,12 @@ const MARKETING_ROUTES = ["/", "/pricing", "/demo", "/privacy", "/terms"];
 export async function proxy(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
+
+  // ─── API routes: NOOIT redirecten, altijd lokaal verwerken ───
+  // Dit voorkomt CORS problemen bij cross-origin redirects
+  if (pathname.startsWith("/api")) {
+    return updateSession(request);
+  }
 
   // ─── Localhost / dev: geen subdomain routing ───
   if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
@@ -46,10 +55,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // ─── Subdomain extractie ───
-  // hostname = "lyreco.dashportal.app" → subdomain = "lyreco"
-  // hostname = "app.dashportal.app"    → subdomain = "app"
-  // hostname = "dashportal.app"        → subdomain = "" (naked)
-  const domainBase = ROOT_DOMAIN.replace(/:\d+$/, ""); // strip port
+  const domainBase = ROOT_DOMAIN.replace(/:\d+$/, "");
   const subdomain = hostname
     .replace(`.${domainBase}`, "")
     .replace(domainBase, "");
@@ -61,10 +67,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
-  // ─── Naked domain: dashportal.app → marketing site ───
+  // ─── Naked domain: dashportal.app → marketing + agency routes ───
   if (!subdomain) {
-    // Als iemand /dashboard, /admin, /onboarding bezoekt op naked domain,
-    // redirect naar app.dashportal.app
+    // Platform routes (dashboard, admin, onboarding) → redirect naar app.
     if (PLATFORM_ROUTES.some((r) => pathname.startsWith(r))) {
       return NextResponse.redirect(
         new URL(pathname, `https://app.${domainBase}`),
@@ -72,13 +77,12 @@ export async function proxy(request: NextRequest) {
       );
     }
 
+    // Marketing routes + agency routes (/agency/*) → gewoon serveren
     return updateSession(request);
   }
 
   // ─── app subdomain: app.dashportal.app → platform ───
   if (subdomain === "app") {
-    // Als iemand marketing routes bezoekt op app subdomain,
-    // redirect naar naked domain
     if (MARKETING_ROUTES.includes(pathname)) {
       return NextResponse.redirect(
         new URL(pathname, `https://${domainBase}`),
@@ -90,8 +94,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // ─── Tenant subdomain: platform routes doorlaten ───
-  // acme.dashportal.app/dashboard → NIET rewriten, doorsturen naar /dashboard
-  // zodat tenant-admins hun beheer dashboard kunnen gebruiken
+  // acme.dashportal.app/dashboard → NIET rewriten
   if (PLATFORM_ROUTES.some((r) => pathname.startsWith(r))) {
     return updateSession(request);
   }
@@ -100,7 +103,7 @@ export async function proxy(request: NextRequest) {
   // lyreco.dashportal.app/home → intern rewrite naar /lyreco/home
   const rewritePath = `/${subdomain}${pathname === "/" ? "" : pathname}`;
   const rewriteUrl = new URL(rewritePath, request.url);
-  rewriteUrl.search = request.nextUrl.search; // query params meenemen
+  rewriteUrl.search = request.nextUrl.search;
 
   const response = NextResponse.rewrite(rewriteUrl);
   response.headers.set("x-tenant-slug", subdomain);
@@ -110,13 +113,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico (favicon)
-     * - public files (images, etc.)
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
