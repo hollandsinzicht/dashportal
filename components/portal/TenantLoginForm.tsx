@@ -81,10 +81,10 @@ export function TenantLoginForm({
       }
 
       // Succes → doorsturen naar portal
-      // Op subdomain (acme.dashportal.app): /home is voldoende
-      // Op localhost: /slug/home is nodig
-      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      router.replace(isLocal ? `/${slug}/home` : "/home");
+      // Path-based (dashportal.app/acme/login of localhost): /{slug}/home
+      // Subdomain (acme.dashportal.app/login): /home (proxy voegt slug toe)
+      const needsSlugPrefix = window.location.pathname.startsWith(`/${slug}`);
+      router.replace(needsSlugPrefix ? `/${slug}/home` : "/home");
     } catch {
       setError("Er ging iets mis. Probeer het later opnieuw.");
     } finally {
@@ -105,11 +105,10 @@ export function TenantLoginForm({
     try {
       const supabase = createClient();
 
-      // Op tenant subdomain (lyreco.dashportal.app): origin bevat al de slug,
-      // dus next=/home is voldoende. Op localhost: origin = localhost:3001,
-      // daar moet /slug/home in next staan.
-      const isLocal = window.location.hostname === "localhost";
-      const nextPath = isLocal ? `/${slug}/home` : "/home";
+      // Path-based (dashportal.app/acme of localhost): /{slug}/home
+      // Subdomain (acme.dashportal.app): /home (proxy voegt slug toe)
+      const needsSlugPrefix = window.location.pathname.startsWith(`/${slug}`);
+      const nextPath = needsSlugPrefix ? `/${slug}/home` : "/home";
 
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: email.toLowerCase().trim(),
@@ -140,8 +139,8 @@ export function TenantLoginForm({
     try {
       const supabase = createClient();
 
-      const isLocal = window.location.hostname === "localhost";
-      const nextPath = isLocal ? `/${slug}/home` : "/home";
+      const needsSlugPrefix = window.location.pathname.startsWith(`/${slug}`);
+      const nextPath = needsSlugPrefix ? `/${slug}/home` : "/home";
 
       const { error: ssoError } = await supabase.auth.signInWithOAuth({
         provider: "azure",
