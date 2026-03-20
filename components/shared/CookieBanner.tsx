@@ -47,6 +47,8 @@ export function CookieBanner() {
 
   function saveConsent(level: ConsentLevel) {
     setConsent(level);
+    // Dispatch event zodat AnalyticsScripts direct reageert (zelfde tab)
+    window.dispatchEvent(new Event("cookie-consent-update"));
     setVisible(false);
   }
 
