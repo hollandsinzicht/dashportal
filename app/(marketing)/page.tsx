@@ -155,6 +155,32 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Trusted by / Klanten */}
+      <section className="py-12 border-b border-border">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-text-secondary mb-8">
+            Vertrouwd door organisaties die data serieus nemen
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+            {[
+              "GGD GHOR",
+              "Lyreco",
+              "Vattenfall",
+              "Renewi",
+              "iO",
+              "Technische Unie",
+            ].map((name) => (
+              <span
+                key={name}
+                className="font-[family-name:var(--font-syne)] font-bold text-xl text-text-secondary/40 hover:text-text-secondary/70 transition-colors select-none"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Problems / Struggles we solve */}
       <section className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
